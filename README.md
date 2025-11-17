@@ -1,4 +1,4 @@
-# GymBuddy 🏋🏽🔥💪🏼
+# GymBuddy Mobile 🏋🏽🔥💪🏼
 
 ![Status](https://img.shields.io/badge/status-development-yellow)
 ![Built_with-Flutter-0256D6](https://img.shields.io/badge/Built_with-Flutter-0256D6?style=flat-square)
