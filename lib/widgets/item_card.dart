@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gymbuddy/screens/community_page.dart';
+import 'package:gymbuddy/screens/howto_page.dart';
+import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
 
 class ItemCard extends StatelessWidget {
@@ -27,11 +30,25 @@ class ItemCard extends StatelessWidget {
             );
 
           // Navigate ke route yang sesuai (tergantung jenis tombol) (belum kepake)
-          if (item.name == "Contoh tombol") {
-            Navigator.pushReplacement(
+          if (item.name == "How To") {
+            Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MyHomePage(),
+                  builder: (context) => HowtoPage(),
+                )
+            );
+          } else if (item.name == "Log Aktivitas") {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LogActivityPage(),
+                )
+            );
+          } else if (item.name == "Komunitas") {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CommunityPage(),
                 )
             );
           }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:gymbuddy/screens/community_page.dart';
+import 'package:gymbuddy/screens/howto_page.dart';
+import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
+import 'package:gymbuddy/screens/user_profile_page.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -37,6 +41,7 @@ class LeftDrawer extends StatelessWidget {
             ),
           ),
 
+          // HomePage
           ListTile(
             leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
@@ -51,6 +56,51 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
 
+          // How To
+          ListTile(
+            leading: const Icon(Icons.question_mark),
+            title: const Text('How To?'),
+            // Bagian redirection ke page
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HowtoPage(),
+                  )
+              );
+            },
+          ),
+
+          // Log Activity
+          ListTile(
+            leading: const Icon(Icons.add_task),
+            title: const Text('Log Activity'),
+            // Bagian redirection ke page, misal form page
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LogActivityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
+                  )
+              );
+            },
+          ),
+
+          // Community
+          ListTile(
+            leading: const Icon(Icons.people),
+            title: const Text('Community'),
+            // Bagian redirection ke page, misal form page
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CommunityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
+                  )
+              );
+            },
+          ),
+
           /* note dari Rexy
           * TEMPLATE BUAT BAGIAN DRAWER
           * 1. COPY SELURUH ISI ListTile(
@@ -60,10 +110,10 @@ class LeftDrawer extends StatelessWidget {
           */
           ListTile(
             leading: const Icon(Icons.post_add),
-            title: const Text('Add'),
+            title: const Text('Dummy'),
             // Bagian redirection ke page, misal form page
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.pushReplacement( // bisa push atau pushreplacement
                   context,
                   MaterialPageRoute(
                     builder: (context) => MyHomePage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.

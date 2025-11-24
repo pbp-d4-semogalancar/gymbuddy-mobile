@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/widgets/left_drawer.dart';
 import 'package:gymbuddy/widgets/item_card.dart';
+import 'package:gymbuddy/screens/user_profile_page.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
@@ -32,9 +33,42 @@ class MyHomePage extends StatelessWidget {
         ),
         // Warna latar belakang AppBar diambil dari skema warna tema aplikasi.
         backgroundColor: Theme.of(context).colorScheme.primary,
+
+        // Tombol Profile
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserProfilePage(),
+                  )
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2), // background button
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Profile',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       // LEFT DRAWER
       drawer: LeftDrawer(),
+
       // Body halaman dengan padding di sekelilingnya.
       body: Padding(
         padding: const EdgeInsets.all(16.0),
