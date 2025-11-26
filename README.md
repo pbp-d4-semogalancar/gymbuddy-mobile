@@ -70,7 +70,7 @@ GymBuddy menggunakan dataset publik berupa kaggle berikut:
 # Role Pengguna
 
 ## 1. Admin
-- Admin dapat menambahkan jenis dan rincian kegiatan workout yang dilakukan.
+- Admin dapat menghapus thread dan reply yang dibuat oleh user.
 
 ## 2. User
 - User nantinya dapat melihat berbagai kegiatan workout yang dapat dilakukan beserta step by stepnya pada menu How To, membuat target dan memantau progress di log aktivitas, serta sharing rangkaian kegiatan melalui menu community.
@@ -82,3 +82,6 @@ GymBuddy menggunakan dataset publik berupa kaggle berikut:
 Pengintegrasian aplikasi flutter dengan web service Django menggunakan fetch data berbasis API, di mana proses pengambilan dan pengiriman data dilakukan dalam format JSON. Proses dimulai dengan tahap autentikasi. Aplikasi mengirimkan kredensial pengguna ke endpoint auth/api/login/. Jika berhasil, server Django akan memberikan token autentikasi. Dalam kasus ini, digunakan package ```CookieRequest``` berfungsi mengelola cookie secara otomatis, termasuk session login Django. Kemudian, instance ```CookieRequest``` perlu dibagikan ke semua komponen di aplikasi Flutter karena menyimpan session/cookie login, misal saat login ke backend Django, server mengirim cookie (misal sessionid). ```CookieRequest``` menyimpan cookie ini di memori agar request selanjutnya bisa diautentikasi. Hal ini membuat semua request ke server yang memerlukan autentikasi dapat langsung menggunakan cookie login yang sama, yang sebelumnya disimpan. Penggunaan package ini dan _permission classes_ pada view Django memastikan bahwa backend hanya memproses permintaan dari pengguna yang sudah terverifikasi. Proses ini adalah tahap awal yang memungkinkan backend mengintegrasikan setiap aktivitas, mulai dari membuat log latihan hingga membalas Thread, dengan akun pengguna yang terverifikasi.
 
 Langkah berikutnya adalah integrasi data untuk fitur-fitur spesifik. Dalam kasus ini, digunakan package ```http``` untuk mengirim request dan menerima response berupa JSON. Package ```http``` adalah package standar di Flutter/Dart untuk melakukan HTTP request (GET, POST, PUT, DELETE) ke server. Untuk semua fitur aplikasi seperti konten (Howto), komunitas (Thread dan Reply), planner (Workout Log dan Target), serta User Profile, aplikasi akan mengirimkan sebuah http request disertai dengan token autentikasi dari ```CookieRequest```. Server Django kemudian menerima request tersebut, memverifikasi token, dan memprosesnya berdasarkan tipe request (GET untuk mengambil data, POST untuk membuat data baru, PUT untuk memperbarui data, dan DELETE untuk menghapus data). Setelah selesai diproses, Django mengembalikan data dalam bentuk JSON melalui endpoint API yang sesuai. Setelah menerima data berbentuk JSON, aplikasi Flutter akan melakukan _parsing_ data tersebut untuk menampilkannya kepada pengguna atau untuk memperbarui state pada aplikasi. Secara keseluruhan, proses pertukaran data antara aplikasi Flutter dan server Django dilakukan melalui HTTP request–response dengan format data JSON sebagai standar utamanya.
+
+# Link Figma
+Link : https://www.figma.com/design/gd4ThrbN9Kt4ddC3wJG0LE/GymBuddy-fixed?node-id=0-1&t=98SSVTNFPLh6NyIG-1
