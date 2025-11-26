@@ -127,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             "password2": password2,
                           }));
                       if (context.mounted) {
-                        if (response['status'] == 'success') {
+                        if (response['status'] == true) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Successfully registered!'),

@@ -3,6 +3,8 @@ import 'package:gymbuddy/screens/community_page.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class ItemCard extends StatelessWidget {
   // Menampilkan kartu dengan ikon dan nama.
@@ -13,6 +15,7 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Material(
       // Menentukan warna latar belakang dari tema aplikasi.
       color: Theme.of(context).colorScheme.secondary,

@@ -3,13 +3,16 @@ import 'package:gymbuddy/screens/community_page.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
-import 'package:gymbuddy/screens/user_profile_page.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Drawer(
       child: ListView(
         children: [
