@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/screens/menu.dart';
+import 'package:gymbuddy/screens/community_page.dart'; // <--- TAMBAHKAN INI
 
 class ItemCard extends StatelessWidget {
   // Menampilkan kartu dengan ikon dan nama.
@@ -26,12 +27,23 @@ class ItemCard extends StatelessWidget {
                 SnackBar(content: Text("Kamu telah menekan tombol ${item.name}!"))
             );
 
+
           // Navigate ke route yang sesuai (tergantung jenis tombol) (belum kepake)
           if (item.name == "Contoh tombol") {
             Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => MyHomePage(),
+                )
+            );
+          }
+
+          if (item.name == "Komunitas") { // <--- CEK NAMA ITEM CARD
+            Navigator.push( // Gunakan push agar bisa kembali
+                context,
+                MaterialPageRoute(
+                  // Arahkan ke CommunityPage
+                  builder: (context) => const CommunityPage(), 
                 )
             );
           }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gymbuddy/screens/community_page.dart';
+
 import 'package:gymbuddy/screens/menu.dart';
+
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -37,6 +40,7 @@ class LeftDrawer extends StatelessWidget {
             ),
           ),
 
+          // HomePage
           ListTile(
             leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
@@ -51,6 +55,21 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
 
+          // Community
+          ListTile(
+            leading: const Icon(Icons.people),
+            title: const Text('Community'),
+            // Bagian redirection ke page, misal form page
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CommunityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
+                  )
+              );
+            },
+          ),
+
           /* note dari Rexy
           * TEMPLATE BUAT BAGIAN DRAWER
           * 1. COPY SELURUH ISI ListTile(
@@ -60,10 +79,10 @@ class LeftDrawer extends StatelessWidget {
           */
           ListTile(
             leading: const Icon(Icons.post_add),
-            title: const Text('Add'),
+            title: const Text('Dummy'),
             // Bagian redirection ke page, misal form page
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.pushReplacement( // bisa push atau pushreplacement
                   context,
                   MaterialPageRoute(
                     builder: (context) => MyHomePage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
