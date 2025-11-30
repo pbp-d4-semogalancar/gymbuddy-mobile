@@ -10,7 +10,7 @@ class NewThreadData {
   final String username;
   final bool isMine; 
   
-  // Menggunakan named required parameters
+  // Menggunakan named required parameter
   NewThreadData({
     required this.id, // <-- HARUS ADA ID
     required this.title, 

@@ -18,7 +18,7 @@ class CommunityPage extends StatefulWidget {
 }
 
 class _CommunityPageState extends State<CommunityPage> {
-  // --- USERNAME DARI SCREENSHOT ANDA: 'deryyy' ---
+  // --- ASUMSI DATA USER YANG LOGIN ---
   final String _currentLoggedInUsername = "deryyy"; 
   
   ThreadFilter _selectedFilter = ThreadFilter.all;
@@ -46,7 +46,7 @@ class _CommunityPageState extends State<CommunityPage> {
     try {
       final request = context.read<CookieRequest>();
       
-      // Menggunakan localhost untuk Chrome
+      // URL GET: Menggunakan localhost
       final response = await request.get("http://localhost:8000/community/api/threads/"); 
 
       if (response is List) {
@@ -55,7 +55,7 @@ class _CommunityPageState extends State<CommunityPage> {
         }).toList();
         
         setState(() {
-          allThreads = fetchedThreads.reversed.toList(); // Tampilkan dari terbaru
+          allThreads = fetchedThreads.reversed.toList();
         });
         
       } else {
@@ -63,13 +63,17 @@ class _CommunityPageState extends State<CommunityPage> {
       }
 
     } catch (e) {
-      setState(() {
-        _error = "Gagal memuat thread. Pastikan Anda sudah login di Flutter.";
-      });
+      if (context.mounted) {
+        setState(() {
+          _error = "Gagal memuat thread. Pastikan Anda sudah login di Flutter.";
+        });
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (context.mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -103,43 +107,112 @@ class _CommunityPageState extends State<CommunityPage> {
   }
   
   // FUNGSI DELETE DENGAN API
-  void _deleteThread(int originalIndex) async {
+  Future<void> _deleteThread(int originalIndex) async {
     final threadToDelete = allThreads[originalIndex];
     final request = context.read<CookieRequest>();
-    
-    // PERBAIKAN: Menggunakan ID thread dari model
     final threadId = threadToDelete.id; 
 
     try {
-        // Menggunakan endpoint DELETE AJAX yang Anda miliki
         final response = await request.post(
-            "http://localhost:8000/community/delete/${threadId}/", // <-- URL localhost
+            "http://localhost:8000/community/delete/${threadId}/", 
             {} // Body kosong
         );
         
-        if (response['status'] == 'success') { 
-            setState(() {
-                allThreads.removeAt(originalIndex);
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("✅ Thread berhasil dihapus.")),
-            );
-        } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("❌ Gagal menghapus thread: ${response['message'] ?? 'Server error.'}")),
-            );
+        if (context.mounted) {
+            if (response['status'] == 'success') { 
+                setState(() {
+                    allThreads.removeAt(originalIndex);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("✅ Thread berhasil dihapus.")),
+                );
+            } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("❌ Gagal menghapus thread: ${response['message'] ?? 'Server error.'}")),
+                );
+            }
         }
 
     } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Terjadi kesalahan koneksi saat menghapus.")),
-        );
+        if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Terjadi kesalahan koneksi saat menghapus.")),
+            );
+        }
     }
   }
 
 
-  // --- WIDGET HELPER LENGKAP ---
+  // --- WIDGET SESUAI DESAIN: HEADER DAN FILTER ---
   
+  Widget _buildBanner() {
+    return Container(
+      height: 150,
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/banner_diskusi.png'), 
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        color: Colors.black54, // Overlay gelap
+        alignment: Alignment.center,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Thread & Reply: Community Discussion', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+            SizedBox(height: 5),
+            Text('Tempatkan untuk membahas lebih banyak tentang workout mu', style: TextStyle(fontSize: 14, color: Colors.white70)),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildFilterHeaderDanTombolBuat() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Filter Buttons
+          Expanded(
+            child: Row(
+              children: [
+                _buildFilterButton(ThreadFilter.all, 'Semua Thread'),
+                const SizedBox(width: 8),
+                _buildFilterButton(ThreadFilter.myThreads, 'Thread Saya'),
+              ],
+            ),
+          ),
+          const SizedBox(width: 15),
+          // + Buat Thread Diskusi Baru Button
+          ElevatedButton.icon(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CreateThreadPage()),
+              );
+              if (result is NewThreadData) {
+                _addThread(result);
+              }
+            },
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Buat Thread Diskusi Baru', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.indigo,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterButton(ThreadFilter filter, String label) {
     final bool isSelected = _selectedFilter == filter;
     return Expanded(
@@ -167,39 +240,125 @@ class _CommunityPageState extends State<CommunityPage> {
       ),
     );
   }
-
-  Widget _buildFilterHeader() {
+  
+  // PERUBAHAN UTAMA DI SINI
+  Widget _buildFooter() {
     return Container(
-      color: Colors.white, 
+      padding: const EdgeInsets.all(20.0),
+      color: Colors.blueGrey.shade800, // <--- BERUBAH KE ABU-ABU GELAP
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          const Text('GymBuddy', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          const Text(
+            'GymBuddy adalah platform kebugaran berbasis web untuk menemani kegiatan workout kamu', 
+            style: TextStyle(fontSize: 12, color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 15),
+          const Text('Contact Us', style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold)),
+          const Text('gymbuddy@gmail.com', style: TextStyle(fontSize: 12, color: Colors.white70)),
+          const SizedBox(height: 20),
+          const Text('© 2024 GymBuddy. Made with Open Dikskusi', style: TextStyle(fontSize: 10, color: Colors.white54)),
+        ],
+      ),
+    );
+  }
+
+  // --- WIDGET ITEM THREAD SESUAI DESAIN ---
+  Widget _buildThreadItem(NewThreadData thread, int originalIndex, bool isOwner) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildFilterButton(ThreadFilter.all, 'Semua Thread'),
-            const SizedBox(width: 10),
-            _buildFilterButton(ThreadFilter.myThreads, 'Thread Saya'),
+            // Judul Thread
+            Text(thread.title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.indigo)),
+            const SizedBox(height: 8),
+
+            // User Info and Date
+            Row(
+              children: [
+                const Icon(Icons.person, size: 16, color: Colors.blue),
+                const SizedBox(width: 5),
+                Text(thread.username, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(width: 10),
+                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                const SizedBox(width: 5),
+                const Text('Pada 26 November 2025', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+            const Divider(height: 15),
+
+            // Content
+            Text(thread.content, style: const TextStyle(fontSize: 13)),
+            
+            // Edit & Delete Buttons (jika milik sendiri)
+            if (isOwner)
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: Row(
+                  children: [
+                    // Tombol Edit
+                    TextButton(
+                      onPressed: () async {
+                        final updatedResult = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditThreadPage(currentThread: thread, threadIndex: thread.id),
+                          ),
+                        );
+                        if (updatedResult is NewThreadData) {
+                          _updateThread(originalIndex, updatedResult);
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade50,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      ),
+                      child: const Text('Edit', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                    ),
+                    const SizedBox(width: 8),
+                    // Tombol Delete
+                    TextButton(
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Hapus Thread"),
+                          content: const Text("Anda yakin ingin menghapus thread ini?"),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+                            TextButton(
+                              onPressed: () {
+                                _deleteThread(originalIndex);
+                                Navigator.pop(context);
+                              },
+                              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade50,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      ),
+                      child: const Text('Delete', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
     );
   }
-  
-  Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.all(10.0),
-      color: Colors.indigo.shade50,
-      alignment: Alignment.center,
-      child: const Text(
-        "© 2025 GymBuddy Community | All Rights Reserved",
-        style: TextStyle(fontSize: 11, color: Colors.indigo, fontWeight: FontWeight.w500),
-      ),
-    );
-  }
-
-  // --- END WIDGET HELPER ---
 
 
+  // --- WIDGET UTAMA ---
   @override
   Widget build(BuildContext context) {
     final currentFilteredList = filteredThreads;
@@ -211,129 +370,16 @@ class _CommunityPageState extends State<CommunityPage> {
     } else if (_error != null) {
       content = Center(child: Text(_error!, style: const TextStyle(color: Colors.red)));
     } else if (currentFilteredList.isEmpty) {
-      content = Center(
-        child: Text(
-          _selectedFilter == ThreadFilter.myThreads 
-              ? "Anda belum membuat thread." 
-              : "Tidak ada thread ditemukan.",
-          style: const TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      );
+      content = Center(child: Text(_selectedFilter == ThreadFilter.myThreads ? "Anda belum membuat thread." : "Tidak ada thread ditemukan.", style: const TextStyle(fontSize: 16, color: Colors.grey)));
     } else {
       content = ListView.builder( 
         itemCount: currentFilteredList.length,
         itemBuilder: (context, index) {
           final thread = currentFilteredList[index];
-          
           final originalIndex = allThreads.indexOf(thread); 
-          
           final bool isOwner = thread.username == _currentLoggedInUsername;
 
-          return Column(
-            children: [
-              InkWell( 
-                onTap: () {
-                  // Navigasi ke Detail
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1. User Header & Metrics
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const CircleAvatar(
-                                radius: 14,
-                                backgroundColor: Colors.indigo,
-                                child: Icon(Icons.person, size: 14, color: Colors.white), 
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Nama akun yang benar
-                                  Text(thread.username, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)), 
-                                  const Text("Posted Just Now", style: TextStyle(fontSize: 10, color: Colors.grey)), 
-                                ],
-                              ),
-                            ],
-                          ),
-                          // Placeholder Metrics
-                          if (!isOwner)
-                            const Text(
-                              "0 Replies", 
-                              style: TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.w500),
-                            ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 10),
-
-                      // 2. Title dan Content
-                      Text(thread.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)), 
-                      const SizedBox(height: 6),
-                      Text(thread.content, style: const TextStyle(fontSize: 13, color: Colors.black87), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      
-                      // 3. Tombol Edit/Delete
-                      if (isOwner)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              // Tombol EDIT
-                              TextButton(
-                                onPressed: () async {
-                                    final updatedResult = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EditThreadPage(
-                                          currentThread: thread,
-                                          threadIndex: thread.id, // <-- KIRIM ID THREAD YANG BENAR
-                                        ),
-                                      ),
-                                    );
-                                    if (updatedResult is NewThreadData) {
-                                      _updateThread(originalIndex, updatedResult);
-                                    }
-                                },
-                                child: const Text('Edit', style: TextStyle(color: Colors.green)),
-                              ),
-                              // Tombol DELETE
-                              TextButton(
-                                onPressed: () => showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text("Hapus Thread"),
-                                    content: const Text("Anda yakin ingin menghapus thread ini?"),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
-                                      TextButton(
-                                        onPressed: () {
-                                          _deleteThread(originalIndex);
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text("Hapus", style: TextStyle(color: Colors.red)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const Divider(height: 1, thickness: 0.5, indent: 16, endIndent: 16, color: Color.fromARGB(255, 230, 230, 230)),
-            ],
-          );
+          return _buildThreadItem(thread, originalIndex, isOwner);
         },
       );
     }
@@ -341,21 +387,15 @@ class _CommunityPageState extends State<CommunityPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Community Threads'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-        elevation: 0, 
-      ),
+      // Menghilangkan AppBar dan menggunakan Column di body
       body: Column(
-        children: [
-          _buildFilterHeader(),
+        children: [ 
+          _buildBanner(), // Banner
+          _buildFilterHeaderDanTombolBuat(), // Filter dan Tombol Create
           
-          Expanded(
-            child: content,
-          ),
+          Expanded(child: content), // Daftar Thread
           
-          _buildFooter(),
+          _buildFooter(), // Footer (Abu-Abu)
         ],
       ),
       
@@ -366,13 +406,9 @@ class _CommunityPageState extends State<CommunityPage> {
             MaterialPageRoute(builder: (context) => const CreateThreadPage()),
           );
 
-          if (result is NewThreadData) { 
-             _addThread(result); 
-          }
+          if (result is NewThreadData) { _addThread(result); }
         },
-        tooltip: 'Buat Thread Baru',
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.blueAccent,
+        tooltip: 'Buat Thread Baru', child: const Icon(Icons.add), backgroundColor: Colors.blueAccent,
       ),
     );
   }
