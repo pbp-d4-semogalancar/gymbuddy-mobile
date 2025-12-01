@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/widgets/left_drawer.dart';
 import 'package:gymbuddy/widgets/item_card.dart';
-import 'package:gymbuddy/screens/user_profile_page.dart';
+import 'package:gymbuddy/screens/user_profile/profile_loader_page.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
@@ -58,7 +58,7 @@ class MyHomePage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const UserProfilePage(),
+                        builder: (context) => ProfileLoaderPage(),
                       ),
                     );
                   },

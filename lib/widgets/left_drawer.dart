@@ -3,8 +3,10 @@ import 'package:gymbuddy/screens/community_page.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
+import 'package:gymbuddy/screens/user_profile/profile_loader_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/screens/login.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -101,6 +103,51 @@ class LeftDrawer extends StatelessWidget {
                     builder: (context) => CommunityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
                   )
               );
+            },
+          ),
+
+          // Community
+          ListTile(
+            leading: const Icon(Icons.people),
+            title: const Text('Profile'),
+            // Bagian redirection ke page, misal form page
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileLoaderPage()
+                  )
+              );
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
+            onTap: () async {
+              // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
+              // If you using chrome,  use URL http://localhost:8000
+              final response = await request.logout(
+                  "http://localhost:8000/auth/api/logout/");
+              String message = response["message"];
+              if (context.mounted) {
+                if (response['status']) {
+                  String uname = response["username"];
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("$message See you again, $uname."),
+                  ));
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                    ),
+                  );
+                }
+              }
             },
           ),
 
