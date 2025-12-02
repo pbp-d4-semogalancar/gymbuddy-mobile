@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/user_profile.dart';
+import 'package:provider/provider.dart';
+import 'package:gymbuddy/providers/user_provider.dart';
+import 'package:gymbuddy/widgets/profile_info_box.dart';
+import 'package:gymbuddy/widgets/profile_picture_display.dart';
 
 class UserProfilePage extends StatelessWidget {
   final UserProfileEntry userProfile;
@@ -8,12 +12,20 @@ class UserProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Definisi Warna sesuai desain referensi
-    const Color darkHeaderColor = Color(0xFF2C2C2C); // header appbar
-    const Color inputBoxColor = Color(0xFF4A4A4A);   // kotak Abu-abu gelap
-    const Color labelColor = Colors.black;           // warna label tulisan
 
-    final String? imageUrl = userProfile.profilePicture;
+    final int? loggedInUserId = context.watch<UserProvider>().userId;
+
+    // warna default
+    const Color darkHeaderColor = Color(0xFF2C2C2C);
+    const Color labelColor = Colors.black;
+
+    final bool isOwner = loggedInUserId == userProfile.id;
+
+    TextStyle labelStyle = const TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w800,
+      color: labelColor,
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,11 +48,12 @@ class UserProfilePage extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
 
-            flexibleSpace: const FlexibleSpaceBar(
+            flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
+              // dynamic title appbar
               title: Text(
-                "Your Profile",
-                style: TextStyle(
+                isOwner ? "Your Profile" : "${userProfile.displayName}'s Profile",
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -49,178 +62,160 @@ class UserProfilePage extends StatelessWidget {
             ),
           ),
 
-          // BAGIAN INFO (Foto, Nama, Bio)
+          // ISI BODY
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- PROFILE PICTURE LOGIC ---
+                  // --- PROFILE PICTURE ---
                   Center(
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade400, width: 2),
-                      ),
-                      child: ClipOval(
-                        child: _buildProfileImage(imageUrl),
-                      ),
+                    child: ProfilePictureDisplay(
+                      imageUrl: userProfile.profilePicture,
+                      size: 120,
                     ),
                   ),
 
                   const SizedBox(height: 30),
 
                   // --- DISPLAY NAME ---
-                  _buildLabel("Display Name:", labelColor),
+                  Text("Display Name:", style: labelStyle),
                   const SizedBox(height: 8),
-                  _buildInfoBox(userProfile.displayName, inputBoxColor),
+
+                  ProfileInfoBox(text: userProfile.displayName),
 
                   const SizedBox(height: 20),
 
                   // --- BIO ---
-                  _buildLabel("Bio:", labelColor),
+                  Text("Bio:", style: labelStyle),
                   const SizedBox(height: 8),
-                  _buildInfoBox(
-                    userProfile.bio.isNotEmpty ? userProfile.bio : "No bio available.",
-                    inputBoxColor,
+
+                  ProfileInfoBox(
+                    text: userProfile.bio.isNotEmpty ? userProfile.bio : "No bio available.",
                     isMultiLine: true,
                   ),
 
                   const SizedBox(height: 24),
 
-                  // --- FAVORITE WORKOUTS LABEL ---
-                  _buildLabel("Favorite Workouts:", labelColor),
+                  // --- FAVORITE WORKOUTS ---
+                  Text("Favorite Workouts:", style: labelStyle),
                   const SizedBox(height: 12),
+
+                  if (userProfile.favoriteWorkouts.isNotEmpty)
+                    Wrap(
+                      spacing: 10.0,
+                      runSpacing: 10.0,
+                      children: userProfile.favoriteWorkouts.map((workout) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                blurRadius: 1,
+                                offset: const Offset(0, 1),
+                              )
+                            ],
+                          ),
+                          child: Text(
+                            workout,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    )
+                  else
+                    Text(
+                      "No favorite workouts added.",
+                      style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
+                    ),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
 
-          // 3. GRID WORKOUTS (SliverGrid)
-          if (userProfile.favoriteWorkouts.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Wrap(
-                  spacing: 10.0, // Jarak horizontal antar item
-                  runSpacing: 10.0, // Jarak vertikal antar baris
-                  children: userProfile.favoriteWorkouts.map((workout) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 1,
-                            offset: const Offset(0, 1),
-                          )
-                        ],
+          // 3. TOMBOL EDIT & DELETE
+          SliverToBoxAdapter(
+            child: isOwner
+                ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 20),
+
+                  // EDIT
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Fitur Edit segera hadir!"))
+                        );
+                      },
+                      icon: const Icon(Icons.edit, color: Colors.white),
+                      label: const Text("Edit Profile", style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      // MainAxisSize.min agar lebar kotak mengikuti panjang teks
-                      child: Text(
-                        workout,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // DELETE
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        _showDeleteConfirmation(context);
+                      },
+                      icon: const Icon(Icons.delete_forever, color: Colors.red),
+                      label: const Text("Delete Account", style: TextStyle(color: Colors.red)),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: Colors.red.shade100)
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
+                    ),
+                  ),
+                ],
               ),
-            )
-          else
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  "No favorite workouts added.",
-                  style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
-                ),
-              ),
-            ),
-
-          // spacer bagian bawah
+            ): const SizedBox.shrink(),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: 50)),
         ],
       ),
     );
   }
 
-  // --- LOGIC GAMBAR UTAMA ---
-  Widget _buildProfileImage(String? url) {
-    // jika url ada, load gambar
-    if (url != null && url.isNotEmpty) {
-      return Image.network(
-        url,
-        fit: BoxFit.cover,
-        width: 120,
-        height: 120,
-        headers: const {"Connection": "close"},
-
-        // jika gagal load, tampilkan icon sebagai profile picture default
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(
-            Icons.account_circle,
-            size: 120,
-            color: Colors.grey,
-          );
-        },
-        // loading state
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const Center(child: CircularProgressIndicator());
-        },
-      );
-    }
-
-    // 3. Jika URL Null, Tampilkan ICON
-    else {
-      return const Icon(
-        Icons.account_circle,
-        size: 120,
-        color: Colors.grey,
-      );
-    }
-  }
-
-  // Helper Widget: Label Teks Bold
-  Widget _buildLabel(String text, Color color) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 18, // Ukuran font besar
-        fontWeight: FontWeight.w800, // Extra Bold
-        color: color,
-      ),
-    );
-  }
-
-  // Helper Widget: Kotak Abu-abu (Read Only)
-  Widget _buildInfoBox(String text, Color bgColor, {bool isMultiLine = false}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      // Jika multiline (bio), tingginya fix agak besar. Jika tidak, menyesuaikan konten.
-      height: isMultiLine ? 100 : null,
-      alignment: isMultiLine ? Alignment.topLeft : Alignment.centerLeft,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white70, // Teks putih agak pudar
-          fontSize: 14,
-        ),
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Hapus Akun?"),
+        content: const Text("Aksi ini tidak dapat dibatalkan. Yakin ingin menghapus akun?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+          TextButton(
+              onPressed: () { Navigator.pop(context); },
+              child: const Text("Hapus", style: TextStyle(color: Colors.red))
+          ),
+        ],
       ),
     );
   }
