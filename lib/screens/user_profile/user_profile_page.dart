@@ -6,130 +6,221 @@ class UserProfilePage extends StatelessWidget {
 
   const UserProfilePage({super.key, required this.userProfile});
 
-  String? _getValidUrl(String? url) {
-    if (url == null || url.isEmpty) return null;
-    return url.replaceAll('localhost', '10.0.2.2');
-  }
-
   @override
   Widget build(BuildContext context) {
-    final String? validImageUrl = _getValidUrl(userProfile.profilePicture);
+    // Definisi Warna sesuai desain referensi
+    const Color darkHeaderColor = Color(0xFF2C2C2C); // header appbar
+    const Color inputBoxColor = Color(0xFF4A4A4A);   // kotak Abu-abu gelap
+    const Color labelColor = Colors.black;           // warna label tulisan
+
+    final String? imageUrl = userProfile.profilePicture;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Profile'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // HEADER IMAGE
-            if (validImageUrl != null)
-              Image.network(
-                validImageUrl,
-                width: double.infinity,
-                height: 300,
-                fit: BoxFit.cover,
-                
-                errorBuilder: (ctx, err, stack) => _buildPlaceholder(),
-                loadingBuilder: (ctx, child, loading) {
-                  if (loading == null) return child;
-                  return Container(height: 300, color: Colors.grey[200]);
-                },
-              )
-            else
-              _buildPlaceholder(),
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: [
+          // APP BAR (Sliver)
+          SliverAppBar(
+            backgroundColor: darkHeaderColor,
+            iconTheme: const IconThemeData(color: Colors.white),
+            expandedHeight: 60.0,
+            pinned: true,
 
-            Padding(
-              padding: const EdgeInsets.all(20.0),
+            // tombol back custom
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_left,
+                color: Colors.white,
+                size: 40,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+
+            flexibleSpace: const FlexibleSpaceBar(
+              centerTitle: true,
+              title: Text(
+                "Your Profile",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ),
+
+          // BAGIAN INFO (Foto, Nama, Bio)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // USERNAME BADGE
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo.shade50,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.indigo.shade100),
-                    ),
-                    child: Text(
-                      '@${userProfile.username}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo.shade700,
+                  // --- PROFILE PICTURE LOGIC ---
+                  Center(
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey.shade400, width: 2),
+                      ),
+                      child: ClipOval(
+                        child: _buildProfileImage(imageUrl),
                       ),
                     ),
                   ),
 
-                  // DISPLAY NAME
-                  Text(
-                    userProfile.displayName,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const SizedBox(height: 30),
 
-                  const SizedBox(height: 12),
-
-                  // INFO ROW
-                  Row(
-                    children: [
-                      Icon(Icons.perm_identity, size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text("ID #${userProfile.id}", style: TextStyle(color: Colors.grey[600])),
-                      const SizedBox(width: 16),
-                      Icon(Icons.fitness_center, size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text("${userProfile.favoriteWorkouts.length} Workouts", style: TextStyle(color: Colors.grey[600])),
-                    ],
-                  ),
-
-                  const Divider(height: 32, thickness: 1),
-
-                  // BIO
-                  const Text("About Me", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  // --- DISPLAY NAME ---
+                  _buildLabel("Display Name:", labelColor),
                   const SizedBox(height: 8),
-                  Text(
-                    userProfile.bio.isNotEmpty ? userProfile.bio : "No bio provided.",
-                    style: const TextStyle(fontSize: 16, height: 1.6),
-                    textAlign: TextAlign.justify,
+                  _buildInfoBox(userProfile.displayName, inputBoxColor),
+
+                  const SizedBox(height: 20),
+
+                  // --- BIO ---
+                  _buildLabel("Bio:", labelColor),
+                  const SizedBox(height: 8),
+                  _buildInfoBox(
+                    userProfile.bio.isNotEmpty ? userProfile.bio : "No bio available.",
+                    inputBoxColor,
+                    isMultiLine: true,
                   ),
 
                   const SizedBox(height: 24),
 
-                  // WORKOUTS CHIPS
-                  if (userProfile.favoriteWorkouts.isNotEmpty) ...[
-                    const Text("Favorite Workouts", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: userProfile.favoriteWorkouts.map((w) => Chip(label: Text(w))).toList(),
-                    ),
-                  ],
+                  // --- FAVORITE WORKOUTS LABEL ---
+                  _buildLabel("Favorite Workouts:", labelColor),
+                  const SizedBox(height: 12),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // 3. GRID WORKOUTS (SliverGrid)
+          if (userProfile.favoriteWorkouts.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Wrap(
+                  spacing: 10.0, // Jarak horizontal antar item
+                  runSpacing: 10.0, // Jarak vertikal antar baris
+                  children: userProfile.favoriteWorkouts.map((workout) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 1,
+                            offset: const Offset(0, 1),
+                          )
+                        ],
+                      ),
+                      // MainAxisSize.min agar lebar kotak mengikuti panjang teks
+                      child: Text(
+                        workout,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            )
+          else
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  "No favorite workouts added.",
+                  style: TextStyle(color: Colors.grey[500], fontStyle: FontStyle.italic),
+                ),
+              ),
+            ),
+
+          // spacer bagian bawah
+          const SliverToBoxAdapter(child: SizedBox(height: 50)),
+        ],
       ),
     );
   }
 
-  Widget _buildPlaceholder() {
+  // --- LOGIC GAMBAR UTAMA ---
+  Widget _buildProfileImage(String? url) {
+    // jika url ada, load gambar
+    if (url != null && url.isNotEmpty) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        width: 120,
+        height: 120,
+        headers: const {"Connection": "close"},
+
+        // jika gagal load, tampilkan icon sebagai profile picture default
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.account_circle,
+            size: 120,
+            color: Colors.grey,
+          );
+        },
+        // loading state
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    // 3. Jika URL Null, Tampilkan ICON
+    else {
+      return const Icon(
+        Icons.account_circle,
+        size: 120,
+        color: Colors.grey,
+      );
+    }
+  }
+
+  // Helper Widget: Label Teks Bold
+  Widget _buildLabel(String text, Color color) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 18, // Ukuran font besar
+        fontWeight: FontWeight.w800, // Extra Bold
+        color: color,
+      ),
+    );
+  }
+
+  // Helper Widget: Kotak Abu-abu (Read Only)
+  Widget _buildInfoBox(String text, Color bgColor, {bool isMultiLine = false}) {
     return Container(
-      width: double.infinity, height: 300, color: Colors.indigo.shade50,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.person, size: 80, color: Colors.indigo.shade200),
-          Text("No Picture", style: TextStyle(color: Colors.indigo.shade300)),
-        ],
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      // Jika multiline (bio), tingginya fix agak besar. Jika tidak, menyesuaikan konten.
+      height: isMultiLine ? 100 : null,
+      alignment: isMultiLine ? Alignment.topLeft : Alignment.centerLeft,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white70, // Teks putih agak pudar
+          fontSize: 14,
+        ),
       ),
     );
   }
