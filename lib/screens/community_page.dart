@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'create_thread_page.dart'; 
 import 'edit_thread_page.dart'; 
 import '../models/community_thread.dart'; 
+import 'thread_detail.dart';
 
 // Enum untuk mengontrol state filter
 enum ThreadFilter { all, myThreads }
@@ -150,7 +151,7 @@ class _CommunityPageState extends State<CommunityPage> {
       height: 150,
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/banner_diskusi.png'), 
+          image: NetworkImage("https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470"),
           fit: BoxFit.cover,
         ),
       ),
@@ -241,11 +242,10 @@ class _CommunityPageState extends State<CommunityPage> {
     );
   }
   
-  // PERUBAHAN UTAMA DI SINI
   Widget _buildFooter() {
     return Container(
       padding: const EdgeInsets.all(20.0),
-      color: Colors.blueGrey.shade800, // <--- BERUBAH KE ABU-ABU GELAP
+      color: Colors.blueGrey.shade800,
       alignment: Alignment.center,
       child: Column(
         children: [
@@ -266,92 +266,99 @@ class _CommunityPageState extends State<CommunityPage> {
     );
   }
 
-  // --- WIDGET ITEM THREAD SESUAI DESAIN ---
   Widget _buildThreadItem(NewThreadData thread, int originalIndex, bool isOwner) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Judul Thread
-            Text(thread.title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.indigo)),
-            const SizedBox(height: 8),
-
-            // User Info and Date
-            Row(
-              children: [
-                const Icon(Icons.person, size: 16, color: Colors.blue),
-                const SizedBox(width: 5),
-                Text(thread.username, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(width: 10),
-                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                const SizedBox(width: 5),
-                const Text('Pada 26 November 2025', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ],
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ThreadDetailScreen(threadId: thread.id), 
             ),
-            const Divider(height: 15),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(thread.title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.indigo)),
+              const SizedBox(height: 8),
 
-            // Content
-            Text(thread.content, style: const TextStyle(fontSize: 13)),
-            
-            // Edit & Delete Buttons (jika milik sendiri)
-            if (isOwner)
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: Row(
-                  children: [
-                    // Tombol Edit
-                    TextButton(
-                      onPressed: () async {
-                        final updatedResult = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditThreadPage(currentThread: thread, threadIndex: thread.id),
-                          ),
-                        );
-                        if (updatedResult is NewThreadData) {
-                          _updateThread(originalIndex, updatedResult);
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.blueGrey.shade50,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      ),
-                      child: const Text('Edit', style: TextStyle(color: Colors.black54, fontSize: 12)),
-                    ),
-                    const SizedBox(width: 8),
-                    // Tombol Delete
-                    TextButton(
-                      onPressed: () => showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("Hapus Thread"),
-                          content: const Text("Anda yakin ingin menghapus thread ini?"),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
-                            TextButton(
-                              onPressed: () {
-                                _deleteThread(originalIndex);
-                                Navigator.pop(context);
-                              },
-                              child: const Text("Delete", style: TextStyle(color: Colors.red)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.blueGrey.shade50,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      ),
-                      child: const Text('Delete', style: TextStyle(color: Colors.black54, fontSize: 12)),
-                    ),
-                  ],
-                ),
+              Row(
+                children: [
+                  const Icon(Icons.person, size: 16, color: Colors.blue),
+                  const SizedBox(width: 5),
+                  Text(thread.username, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(width: 10),
+                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                  const SizedBox(width: 5),
+                  const Text('Pada 26 November 2025', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
               ),
-          ],
+              const Divider(height: 15),
+
+              // Content
+              Text(thread.content, style: const TextStyle(fontSize: 13)),
+              
+              if (isOwner)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Row(
+                    children: [
+                      // Tombol Edit
+                      TextButton(
+                        onPressed: () async {
+                          final updatedResult = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditThreadPage(currentThread: thread, threadIndex: thread.id),
+                            ),
+                          );
+                          if (updatedResult is NewThreadData) {
+                            _updateThread(originalIndex, updatedResult);
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade50,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        ),
+                        child: const Text('Edit', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      ),
+                      const SizedBox(width: 8),
+                      // Tombol Delete
+                      TextButton(
+                        onPressed: () => showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("Hapus Thread"),
+                            content: const Text("Anda yakin ingin menghapus thread ini?"),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
+                              TextButton(
+                                onPressed: () {
+                                  _deleteThread(originalIndex);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade50,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        ),
+                        child: const Text('Delete', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -387,7 +394,6 @@ class _CommunityPageState extends State<CommunityPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // Menghilangkan AppBar dan menggunakan Column di body
       body: Column(
         children: [ 
           _buildBanner(), // Banner
