@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/exercise.dart';
 import 'package:gymbuddy/service/howto_service.dart';
+import 'package:gymbuddy/widgets/howto_exercise_widget.dart';
+import 'package:gymbuddy/screens/exercise_widgets.dart';
 
 
 class HowtoPage extends StatefulWidget {
@@ -13,32 +15,29 @@ class HowtoPage extends StatefulWidget {
 class _HowtoPageState extends State<HowtoPage> {
   late Future<List<Exercise>> exercisesFuture;
 
-  // NEW → List opsi diambil dari API, bukan hardcoded
+  // dynamic filter options (ambil dari API)
   List<String> muscleOptions = [];
   List<String> equipmentOptions = [];
 
-  // State filter
+  // selected filter
   String? selectedMuscle;
   String? selectedEquipment;
 
   @override
   void initState() {
     super.initState();
-
-    // Load data exercise
-    exercisesFuture = HowToService.fetchExercises();
-
-    // NEW → Load opsi filter
-    loadFilterOptions();
+    _loadInitial();
   }
 
-  // NEW → Mengambil unique muscle & equipment dari API
-  void loadFilterOptions() async {
-    final result = await HowToService.fetchOptions();
+  Future<void> _loadInitial() async {
+    exercisesFuture = HowToService.fetchExercises();
+
+    // load options from API
+    var options = await HowToService.fetchOptions();
 
     setState(() {
-      muscleOptions = result["muscles"] ?? [];
-      equipmentOptions = result["equipments"] ?? [];
+      muscleOptions = options["muscles"] ?? [];
+      equipmentOptions = options["equipments"] ?? [];
     });
   }
 
@@ -63,20 +62,16 @@ class _HowtoPageState extends State<HowtoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "How To Exercise",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("How To Exercise", style: TextStyle(color: Colors.white)),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
 
       body: Column(
         children: [
-          // ===========================
-          //         FILTER UI
-          // ===========================
+
+          // FILTERING BAR
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
 
@@ -95,7 +90,7 @@ class _HowtoPageState extends State<HowtoPage> {
                   ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
 
                 // EQUIPMENT FILTER
                 Expanded(
@@ -120,9 +115,7 @@ class _HowtoPageState extends State<HowtoPage> {
             ),
           ),
 
-          // ===========================
-          //       LIST EXERCISE
-          // ===========================
+          // LIST
           Expanded(
             child: FutureBuilder<List<Exercise>>(
               future: exercisesFuture,
@@ -137,7 +130,7 @@ class _HowtoPageState extends State<HowtoPage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text("Tidak ada data exercise"));
+                  return const Center(child: Text("Tidak ada exercise"));
                 }
 
                 final exercises = snapshot.data!;
@@ -146,22 +139,23 @@ class _HowtoPageState extends State<HowtoPage> {
                   itemCount: exercises.length,
                   itemBuilder: (context, index) {
                     final ex = exercises[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      child: ListTile(
-                        title: Text(ex.exerciseName),
-                        subtitle: Text(ex.mainMuscle),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          // detail page nanti
-                        },
-                      ),
+                    return ExerciseCard(
+                      exercise: ex,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ExerciseDetailPage(exercise: ex),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
               },
             ),
           ),
+
         ],
       ),
     );
