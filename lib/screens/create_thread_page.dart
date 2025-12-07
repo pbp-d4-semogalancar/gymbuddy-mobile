@@ -32,6 +32,16 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
     
     final request = context.read<CookieRequest>();
     
+    if (!request.loggedIn) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("❌ Anda harus login terlebih dahulu!")),
+    );
+    setState(() {
+      _isLoading = false;
+    });
+    return;
+  }
+
     setState(() {
       _isLoading = true; 
     });
@@ -42,11 +52,17 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
         "content": _contentController.text,
       };
 
+      print("Logged in: ${request.loggedIn}");
+      print("Mengirim data ke server: $data");
+
+
       // PERBAIKAN URL: Menggunakan localhost untuk Chrome
-      final response = await request.postJson(
-        "http://localhost:8000/community/api/threads/", 
+      final response = await request.post(
+       "http://localhost:8000/community/api/thread/create/", 
         data,
       );
+
+      print("Response dari server: $response");
 
       if (context.mounted) {
           if (response.containsKey('id') && response['id'] != null) { 
@@ -59,7 +75,7 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
                 id: response['id'] as int, // <-- KIRIM ID DARI RESPONSE
                 title: response['title'] as String, 
                 content: response['content'] as String, 
-                username: response['author_username'], 
+                username: response['username'], 
                 isMine: true, 
               );
               

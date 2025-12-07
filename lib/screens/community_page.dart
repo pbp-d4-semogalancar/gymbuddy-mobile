@@ -107,40 +107,33 @@ class _CommunityPageState extends State<CommunityPage> {
   }
   
   // FUNGSI DELETE DENGAN API
-  Future<void> _deleteThread(int originalIndex) async {
-    final threadToDelete = allThreads[originalIndex];
-    final request = context.read<CookieRequest>();
-    final threadId = threadToDelete.id; 
+Future<void> _deleteThread(int threadId) async {
+  final request = context.read<CookieRequest>();
 
-    try {
-        final response = await request.post(
-            "http://localhost:8000/community/delete/${threadId}/", 
-            {} // Body kosong
-        );
-        
-        if (context.mounted) {
-            if (response['status'] == 'success') { 
-                setState(() {
-                    allThreads.removeAt(originalIndex);
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("✅ Thread berhasil dihapus.")),
-                );
-            } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("❌ Gagal menghapus thread: ${response['message'] ?? 'Server error.'}")),
-                );
-            }
-        }
+  try {
+    final response = await request.post(
+      "http://localhost:8000/community/api/thread/$threadId/delete/",
+      {},
+    );
 
-    } catch (e) {
-        if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Terjadi kesalahan koneksi saat menghapus.")),
-            );
-        }
+    if (response.containsKey('success') && response['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("✅ Thread berhasil dihapus!")),
+      );
+      Navigator.pop(context, true); // kembali ke halaman sebelumnya
+    } else {
+      String errorMsg = response['error'] ?? "Gagal menghapus thread.";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ $errorMsg")),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Terjadi kesalahan koneksi saat menghapus.")),
+    );
   }
+}
+
 
 
   // --- WIDGET SESUAI DESAIN: HEADER DAN FILTER ---
@@ -334,7 +327,7 @@ class _CommunityPageState extends State<CommunityPage> {
                             TextButton(onPressed: () => Navigator.pop(context), child: const Text("Batal")),
                             TextButton(
                               onPressed: () {
-                                _deleteThread(originalIndex);
+                                _deleteThread(thread.id);
                                 Navigator.pop(context);
                               },
                               child: const Text("Delete", style: TextStyle(color: Colors.red)),

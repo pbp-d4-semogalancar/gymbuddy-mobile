@@ -49,10 +49,13 @@ class _EditThreadPageState extends State<EditThreadPage> {
 
       // PERBAIKAN URL: Menggunakan localhost
       // Menggunakan request.post (Non-JSON) untuk endpoint AJAX
-      final response = await request.post(
-        "http://localhost:8000/community/edit/${widget.threadIndex}/", 
-        data,
-      );
+     final response = await request.post(
+  "http://localhost:8000/community/api/thread/${widget.threadIndex}/edit/",
+  {
+    "title": _titleController.text,
+    "content": _contentController.text,
+  },
+);
 
       if (context.mounted) {
           // Asumsi respons AJAX sukses adalah {success: true}
