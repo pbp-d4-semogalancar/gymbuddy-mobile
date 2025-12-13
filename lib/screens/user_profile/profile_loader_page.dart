@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:gymbuddy/models/user_profile.dart';
 import 'package:gymbuddy/screens/user_profile/user_profile_page.dart';
 import 'package:gymbuddy/providers/user_provider.dart';
+import 'package:gymbuddy/screens/user_profile/user_profile_form.dart';
 
 class ProfileLoaderPage extends StatefulWidget {
   // Jika null = profil sendiri
@@ -51,6 +52,10 @@ class _ProfileLoaderPageState extends State<ProfileLoaderPage> {
         // baca Provider di dalam fungsi future
         future: fetchUserProfile(context, request),
         builder: (context, snapshot) {
+
+          if (snapshot.data == null) {
+            return const UserProfileForm();
+          }
 
           // Loading state
           if (snapshot.connectionState == ConnectionState.waiting) {

@@ -9,7 +9,7 @@ class UserProfileEntry {
   String username;
   String displayName;
   String bio;
-  String profilePicture;
+  String? profilePicture;
   List<FavoriteWorkout> favoriteWorkouts;
 
   UserProfileEntry({
@@ -17,7 +17,7 @@ class UserProfileEntry {
     required this.username,
     required this.displayName,
     required this.bio,
-    required this.profilePicture,
+    this.profilePicture,
     required this.favoriteWorkouts,
   });
 
@@ -26,7 +26,7 @@ class UserProfileEntry {
     username: json["username"],
     displayName: json["display_name"],
     bio: json["bio"],
-    profilePicture: json["profile_picture"],
+    profilePicture: json["profile_picture"] as String?,
     favoriteWorkouts: List<FavoriteWorkout>.from(json["favorite_workouts"].map((x) => FavoriteWorkout.fromJson(x))),
   );
 

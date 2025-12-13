@@ -17,6 +17,7 @@ class ProfilePictureDisplay extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        color: Colors.grey.shade200,
         border: Border.all(color: Colors.grey.shade400, width: 2),
       ),
       child: ClipOval(
@@ -32,18 +33,25 @@ class ProfilePictureDisplay extends StatelessWidget {
         fit: BoxFit.cover,
         width: size,
         height: size,
+        key: ValueKey(imageUrl),
         headers: const {"Connection": "close"},
 
         errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.account_circle, size: size, color: Colors.grey);
+          return Icon(Icons.broken_image, size: size * 0.5, color: Colors.grey);
         },
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
         },
       );
     } else {
-      return Icon(Icons.account_circle, size: size, color: Colors.grey);
+      return Icon(Icons.person, size: size * 0.6, color: Colors.grey);
     }
   }
 }
