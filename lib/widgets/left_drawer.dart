@@ -5,6 +5,8 @@ import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/service/bookmark_provider.dart';
+
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -66,10 +68,13 @@ class LeftDrawer extends StatelessWidget {
             // Bagian redirection ke page
             onTap: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HowtoPage(),
-                  )
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (_) => BookmarkProvider(),
+                    child: const HowtoPage(),
+                  ),
+                ),
               );
             },
           ),
