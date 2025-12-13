@@ -8,6 +8,7 @@ import 'package:gymbuddy/providers/user_provider.dart';
 import 'package:gymbuddy/widgets/user_profile/unsaved_changes_bar.dart';
 import 'package:gymbuddy/widgets/user_profile/profile_picture_section.dart';
 import 'package:gymbuddy/widgets/user_profile/favorite_workouts_section.dart';
+import 'package:gymbuddy/widgets/user_profile/delete_profile_dialog.dart';
 
 class UserProfilePage extends StatefulWidget {
   final UserProfileEntry userProfile;
@@ -454,102 +455,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFFFFFFFF),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ICON WARNING
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFFFE0E0),
-              ),
-              child: const Icon(
-                Icons.warning_rounded,
-                color: Colors.red,
-                size: 32,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // TITLE
-            const Text(
-              "Hapus Profil Permanen?",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // DESCRIPTION
-            const Text(
-              "Tindakan ini tidak dapat dibatalkan. Semua data, riwayat workout, dan foto profil Anda akan hilang selamanya.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ACTION BUTTONS
-            Row(
-              children: [
-                // BATAL
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black87,
-                      side: const BorderSide(color: Color(0xFFCDD5DF)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Batal"),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // HAPUS
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE02424),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _deleteProfile(request);
-                    },
-                    child: const Text(
-                      "Ya, Hapus",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      builder: (_) => DeleteProfileDialog(
+        onConfirm: () => _deleteProfile(request),
       ),
     );
   }
