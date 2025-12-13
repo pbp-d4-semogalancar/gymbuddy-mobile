@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'profile_picture_display.dart';
+import 'package:gymbuddy/widgets/profile_picture_display.dart';
 
 class ProfilePictureSection extends StatelessWidget {
   final String imageUrl;

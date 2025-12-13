@@ -31,7 +31,7 @@ class UnsavedChangesBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            "Unsaved Changes",
+            "Simpan perubahan?",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           Row(
@@ -39,7 +39,7 @@ class UnsavedChangesBar extends StatelessWidget {
               TextButton(
                 onPressed: onReset,
                 child: const Text(
-                  "Reset",
+                  "Batal",
                   style: TextStyle(color: Colors.white70),
                 ),
               ),
@@ -47,7 +47,7 @@ class UnsavedChangesBar extends StatelessWidget {
               ElevatedButton(
                 onPressed: isSaving ? null : onSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -61,7 +61,7 @@ class UnsavedChangesBar extends StatelessWidget {
                     strokeWidth: 2,
                   ),
                 )
-                    : const Text("Save", style: TextStyle(color: Colors.white)),
+                    : const Text("Simpan", style: TextStyle(color: Colors.white)),
               ),
             ],
           )

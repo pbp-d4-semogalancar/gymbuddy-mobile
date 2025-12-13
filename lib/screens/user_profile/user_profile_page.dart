@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/user_profile.dart';
+import 'package:gymbuddy/screens/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:gymbuddy/providers/user_provider.dart';
-import 'package:gymbuddy/widgets/unsaved_changes_bar.dart';
-import 'package:gymbuddy/widgets/profile_picture_section.dart';
-import 'package:gymbuddy/widgets/favorite_workouts_section.dart';
+import 'package:gymbuddy/widgets/user_profile/unsaved_changes_bar.dart';
+import 'package:gymbuddy/widgets/user_profile/profile_picture_section.dart';
+import 'package:gymbuddy/widgets/user_profile/favorite_workouts_section.dart';
 
 class UserProfilePage extends StatefulWidget {
   final UserProfileEntry userProfile;
@@ -26,7 +27,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   late List<FavoriteWorkout> _currentWorkouts;
 
   List<Map<String, dynamic>>? _cachedFavoriteWorkouts;
-  bool _isLoadingWorkouts = false;
 
   bool _hasChanges = false;
   bool _isSaving = false;
@@ -90,7 +90,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     setState(() => _isSaving = true);
 
     try {
-      final url = 'http://localhost:8000/profile/edit/api/';
+      final url = '$_baseUrl/profile/edit/api/';
 
       final Map<String, dynamic> body = {
         "display_name": _displayNameController.text,
@@ -116,7 +116,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<List<Map<String, dynamic>>> fetchFavoriteWorkouts(CookieRequest request) async {
     final res = await request.get(
-      "$_baseUrl/howto/api/list/",
+      "$_baseUrl/profile/list-workouts/",
     );
 
     return List<Map<String, dynamic>>.from(res);
@@ -199,13 +199,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         _buildEditableBox(_bioController, isOwner, isMultiLine: true),
 
                         const SizedBox(height: 24),
-                        _buildLabel("Favorite Workouts"),
+                        _buildLabel("Workout Favorit"),
 
                         // --- CHIPS ---
                         const SizedBox(height: 8),
                         FavoriteWorkoutsSection(
                           workouts: _currentWorkouts,
                           isOwner: isOwner,
+                          hasChanges: _hasChanges,
                           onAdd: () => _showAddWorkoutDialog(context),
                           onRemove: (id) {
                             setState(() {
@@ -217,10 +218,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                         if(isOwner) ...[
                           const SizedBox(height: 40),
-                          const Divider(),
                           TextButton.icon(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            label: const Text("Delete Account", style: TextStyle(color: Colors.red)),
+                            icon: const Icon(Icons.delete),
+                            label: const Text(
+                              "Hapus Akun",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white, // teks + icon
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                             onPressed: () => _showDeleteConfirmation(context),
                           )
                         ]
@@ -288,11 +301,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
   void _showAddWorkoutDialog(BuildContext context) async {
     final request = context.read<CookieRequest>();
 
+    // LOADING STATE
+
+    if (_cachedFavoriteWorkouts == null) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      _cachedFavoriteWorkouts = await fetchFavoriteWorkouts(request);
+
+      if (!mounted) return;
+      Navigator.pop(context);
+    }
+
     _cachedFavoriteWorkouts ??= await fetchFavoriteWorkouts(request);
 
     final favoriteWorkouts = _cachedFavoriteWorkouts!;
 
     // TEMP STATE
+
     final Set<int> selectedIds =
     _currentWorkouts.map((w) => w.id).toSet();
 
@@ -302,7 +333,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              title: const Text("Select Favorite Workouts"),
+              title: const Text("Pilih Workout Favoritmu!"),
               content: SizedBox(
                 width: double.maxFinite,
                 height: 400,
@@ -315,7 +346,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                     return CheckboxListTile(
                       value: selectedIds.contains(exId),
-                      title: Text(exName),
+                      title: Text(
+                        exName,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      activeColor: Colors.black,
+                      checkColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                       onChanged: (checked) {
                         setDialogState(() {
                           if (checked == true) {
@@ -331,10 +368,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
               actions: [
                 TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey[600],
+                  ),
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text("Cancel"),
+                  child: const Text("Batal"),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   onPressed: () {
                     setState(() {
                       _currentWorkouts = favoriteWorkouts
@@ -349,8 +396,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     });
                     Navigator.pop(ctx);
                   },
-                  child: const Text("Save"),
-                )
+                  child: const Text(
+                    "Simpan",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             );
           },
@@ -359,10 +409,148 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
+  Future<void> _deleteProfile(CookieRequest request) async {
+    setState(() => _isSaving = true);
+
+    try {
+      final url =
+          "$_baseUrl/profile/${widget.userProfile.id}/${widget.userProfile.username}/delete/";
+
+      final response = await request.post(url, {
+        "_method": "DELETE",
+      });
+
+      if (!mounted) return;
+
+      if (response["success"] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Akun berhasil dihapus")),
+        );
+
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LoginPage(),
+            )
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response["message"] ?? "Gagal menghapus akun")),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint("DELETE PROFILE ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Terjadi kesalahan")),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
   void _showDeleteConfirmation(BuildContext context) {
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: const Text("Delete Account?"),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel"))],
-    ));
+    final request = context.read<CookieRequest>();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFFFFFFFF),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ICON WARNING
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFFFE0E0),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: Colors.red,
+                size: 32,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // TITLE
+            const Text(
+              "Hapus Profil Permanen?",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // DESCRIPTION
+            const Text(
+              "Tindakan ini tidak dapat dibatalkan. Semua data, riwayat workout, dan foto profil Anda akan hilang selamanya.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ACTION BUTTONS
+            Row(
+              children: [
+                // BATAL
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.black87,
+                      side: const BorderSide(color: Color(0xFFCDD5DF)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Batal"),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // HAPUS
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE02424),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _deleteProfile(request);
+                    },
+                    child: const Text(
+                      "Ya, Hapus",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

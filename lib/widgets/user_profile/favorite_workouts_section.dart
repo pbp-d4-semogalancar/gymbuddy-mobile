@@ -4,6 +4,7 @@ import 'package:gymbuddy/models/user_profile.dart';
 class FavoriteWorkoutsSection extends StatelessWidget {
   final List<FavoriteWorkout> workouts;
   final bool isOwner;
+  final bool hasChanges;
   final VoidCallback onAdd;
   final Function(int id) onRemove;
 
@@ -11,6 +12,7 @@ class FavoriteWorkoutsSection extends StatelessWidget {
     super.key,
     required this.workouts,
     required this.isOwner,
+    required this.hasChanges,
     required this.onAdd,
     required this.onRemove,
   });
@@ -29,13 +31,13 @@ class FavoriteWorkoutsSection extends StatelessWidget {
               side: const BorderSide(color: Colors.grey),
               borderRadius: BorderRadius.circular(8),
             ),
-            onDeleted: isOwner ? () => onRemove(w.id) : null,
+            onDeleted: isOwner && hasChanges ? () => onRemove(w.id) : null,
           ),
         ),
         if (isOwner)
           ActionChip(
-            label: const Icon(Icons.add, size: 16, color: Colors.white),
-            backgroundColor: Colors.blueAccent,
+            label: const Icon(Icons.add, size: 20, color: Colors.white),
+            backgroundColor: Color(0xFF4A4A4A),
             onPressed: onAdd,
           ),
       ],

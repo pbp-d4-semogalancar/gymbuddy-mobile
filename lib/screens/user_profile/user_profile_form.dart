@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:gymbuddy/models/user_profile.dart';
-import 'package:gymbuddy/widgets/profile_picture_section.dart';
-import 'package:gymbuddy/widgets/favorite_workouts_section.dart';
+import 'package:gymbuddy/widgets/user_profile/profile_picture_section.dart';
+import 'package:gymbuddy/widgets/user_profile/favorite_workouts_section.dart';
 
 class UserProfileForm extends StatefulWidget {
   const UserProfileForm({super.key});
@@ -40,7 +40,7 @@ class _UserProfileFormState extends State<UserProfileForm> {
   }
 
   Future<List<Map<String, dynamic>>> fetchExercises(CookieRequest request) async {
-    final res = await request.get("http://localhost:8000/howto/api/list/");
+    final res = await request.get("$_baseUrl/profile/list-workouts/");
     return List<Map<String, dynamic>>.from(res);
   }
 
@@ -60,7 +60,7 @@ class _UserProfileFormState extends State<UserProfileForm> {
       };
 
       final response = await request.post(
-        "http://localhost:8000/profile/create/api/",
+        "$_baseUrl/profile/create/api/",
         body,
       );
 
@@ -113,7 +113,7 @@ class _UserProfileFormState extends State<UserProfileForm> {
               _label("Display Name"),
               _inputBox(
                 _displayNameController,
-                hint: "Your name",
+                hint: "Masukkan display name...",
                 validator: (v) =>
                 v == null || v.isEmpty ? "Display name wajib diisi" : null,
               ),
@@ -123,14 +123,15 @@ class _UserProfileFormState extends State<UserProfileForm> {
               _inputBox(
                 _bioController,
                 isMultiLine: true,
-                hint: "Tell something about yourself",
+                hint: "Ceritain tentang kamu...",
               ),
 
               const SizedBox(height: 24),
-              _label("Favorite Workouts"),
+              _label("Workout Favorit"),
               FavoriteWorkoutsSection(
                 workouts: _selectedWorkouts,
                 isOwner: true,
+                hasChanges: true,
                 onAdd: () => _showAddWorkoutDialog(context),
                 onRemove: (id) {
                   setState(() {
@@ -207,7 +208,7 @@ class _UserProfileFormState extends State<UserProfileForm> {
         builder: (ctx, setDialogState) => AlertDialog(
           title: const Text("Select Favorite Workouts"),
           content: SizedBox(
-            width: double.maxFinite, // ⬅️ PENTING
+            width: double.maxFinite,
             height: 400,
             child: ListView.builder(
               itemCount: exercises.length,
