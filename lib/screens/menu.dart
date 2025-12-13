@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gymbuddy/widgets/left_drawer.dart';
 import 'package:gymbuddy/widgets/item_card.dart';
 import 'package:gymbuddy/screens/user_profile_page.dart';
+import 'package:gymbuddy/screens/community_page.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});

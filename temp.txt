@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'create_thread_page.dart'; 
 import 'edit_thread_page.dart'; 
 import '../models/community_thread.dart'; 
-import 'thread_detail.dart';
 
 // Enum untuk mengontrol state filter
 enum ThreadFilter { all, myThreads }
@@ -144,7 +143,7 @@ Future<void> _deleteThread(int threadId) async {
       height: 150,
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: NetworkImage("https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470"),
+          image: AssetImage('assets/images/banner_diskusi.png'), 
           fit: BoxFit.cover,
         ),
       ),
@@ -235,10 +234,11 @@ Future<void> _deleteThread(int threadId) async {
     );
   }
   
+  // PERUBAHAN UTAMA DI SINI
   Widget _buildFooter() {
     return Container(
       padding: const EdgeInsets.all(20.0),
-      color: Colors.blueGrey.shade800,
+      color: Colors.blueGrey.shade800, // <--- BERUBAH KE ABU-ABU GELAP
       alignment: Alignment.center,
       child: Column(
         children: [
@@ -259,27 +259,19 @@ Future<void> _deleteThread(int threadId) async {
     );
   }
 
+  // --- WIDGET ITEM THREAD SESUAI DESAIN ---
   Widget _buildThreadItem(NewThreadData thread, int originalIndex, bool isOwner) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 2,
-      clipBehavior: Clip.hardEdge,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ThreadDetailScreen(threadId: thread.id), 
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(thread.title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.indigo)),
-              const SizedBox(height: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Judul Thread
+            Text(thread.title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.indigo)),
+            const SizedBox(height: 8),
 
             // User Info and Date
             Row(
@@ -352,8 +344,7 @@ Future<void> _deleteThread(int threadId) async {
                   ],
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -389,6 +380,7 @@ Future<void> _deleteThread(int threadId) async {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      // Menghilangkan AppBar dan menggunakan Column di body
       body: Column(
         children: [ 
           _buildBanner(), // Banner

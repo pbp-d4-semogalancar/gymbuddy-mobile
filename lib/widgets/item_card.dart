@@ -5,6 +5,7 @@ import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/screens/community_page.dart';
 
 class ItemCard extends StatelessWidget {
   // Menampilkan kartu dengan ikon dan nama.
@@ -32,6 +33,7 @@ class ItemCard extends StatelessWidget {
                 SnackBar(content: Text("Kamu telah menekan tombol ${item.name}!"))
             );
 
+
           // Navigate ke route yang sesuai (tergantung jenis tombol) (belum kepake)
           if (item.name == "How To") {
             Navigator.push(
@@ -52,6 +54,16 @@ class ItemCard extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => CommunityPage(),
+                )
+            );
+          }
+
+          if (item.name == "Komunitas") { // <--- CEK NAMA ITEM CARD
+            Navigator.push( // Gunakan push agar bisa kembali
+                context,
+                MaterialPageRoute(
+                  // Arahkan ke CommunityPage
+                  builder: (context) => const CommunityPage(), 
                 )
             );
           }
