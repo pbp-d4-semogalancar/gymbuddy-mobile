@@ -9,15 +9,15 @@ class UserProfileEntry {
   String username;
   String displayName;
   String bio;
-  String? profilePicture;
-  List<String> favoriteWorkouts;
+  String profilePicture;
+  List<FavoriteWorkout> favoriteWorkouts;
 
   UserProfileEntry({
     required this.id,
     required this.username,
     required this.displayName,
     required this.bio,
-    this.profilePicture,
+    required this.profilePicture,
     required this.favoriteWorkouts,
   });
 
@@ -27,7 +27,7 @@ class UserProfileEntry {
     displayName: json["display_name"],
     bio: json["bio"],
     profilePicture: json["profile_picture"],
-    favoriteWorkouts: List<String>.from(json["favorite_workouts"].map((x) => x)),
+    favoriteWorkouts: List<FavoriteWorkout>.from(json["favorite_workouts"].map((x) => FavoriteWorkout.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -36,6 +36,26 @@ class UserProfileEntry {
     "display_name": displayName,
     "bio": bio,
     "profile_picture": profilePicture,
-    "favorite_workouts": List<dynamic>.from(favoriteWorkouts.map((x) => x)),
+    "favorite_workouts": List<dynamic>.from(favoriteWorkouts.map((x) => x.toJson())),
+  };
+}
+
+class FavoriteWorkout {
+  int id;
+  String exerciseName;
+
+  FavoriteWorkout({
+    required this.id,
+    required this.exerciseName,
+  });
+
+  factory FavoriteWorkout.fromJson(Map<String, dynamic> json) => FavoriteWorkout(
+    id: json["id"],
+    exerciseName: json["exercise_name"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "exercise_name": exerciseName,
   };
 }
