@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/exercise.dart';
 import 'package:gymbuddy/service/howto_service.dart';
+import 'package:gymbuddy/widgets/left_drawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -340,6 +341,7 @@ class _HowtoPageState extends State<HowtoPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
+      drawer: const LeftDrawer(), 
       body: SafeArea(
         child: Column(
           children: [
@@ -366,24 +368,38 @@ class _HowtoPageState extends State<HowtoPage> {
   }
 
   Widget _topBar() {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade900,
-        boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.25))],
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 16,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.person, size: 18, color: Colors.black),
+    return Builder(
+      builder: (context) {
+        return Container(
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade900,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: Colors.black.withOpacity(0.25),
+              )
+            ],
           ),
-          const Spacer(),
-          Text("GymBuddy", style: TextStyle(color: Colors.grey.shade200, fontWeight: FontWeight.bold)),
-        ],
-      ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+              const Spacer(),
+              Text(
+                "GymBuddy",
+                style: TextStyle(
+                  color: Colors.grey.shade200,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -445,7 +461,7 @@ class _HowtoPageState extends State<HowtoPage> {
                 onPressed: () => setState(() => showFavoritesOnly = !showFavoritesOnly),
                 style: OutlinedButton.styleFrom(foregroundColor: Colors.black, side: const BorderSide(color: Colors.black)),
                 icon: Icon(showFavoritesOnly ? Icons.star : Icons.star_border),
-                label: Text(_loadingBookmarks ? "Loading..." : "Filter by Favorite"),
+                label: Text(_loadingBookmarks ? "Loading..." : "Favorites"),
               ),
             ],
           ),

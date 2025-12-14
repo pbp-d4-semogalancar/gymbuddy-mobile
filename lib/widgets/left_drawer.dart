@@ -2,13 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gymbuddy/screens/community_page.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
-
 import 'package:gymbuddy/screens/menu.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:gymbuddy/service/bookmark_provider.dart';
-
-
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -54,6 +50,7 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Home'),
             // Bagian redirection ke MyHomePage
             onTap: () {
+              Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
@@ -67,19 +64,17 @@ class LeftDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.question_mark),
             title: const Text('How To?'),
-            // Bagian redirection ke page
             onTap: () {
-              Navigator.push(
+              Navigator.pop(context);
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (_) => BookmarkProvider(),
-                    child: const HowtoPage(),
-                  ),
+                  builder: (context) => const HowtoPage(),
                 ),
               );
             },
           ),
+
 
           // Log Activity
           ListTile(
@@ -87,7 +82,8 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Log Activity'),
             // Bagian redirection ke page, misal form page
             onTap: () {
-              Navigator.push(
+              Navigator.pop(context);
+              Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => LogActivityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
@@ -102,7 +98,8 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Community'),
             // Bagian redirection ke page, misal form page
             onTap: () {
-              Navigator.push(
+              Navigator.pop(context);
+              Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CommunityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
