@@ -32,7 +32,9 @@ class PlannerService {
   }
 
   Future<bool> completeLog(int planId, String description) async {
-    var url = Uri.parse('$baseUrl/planner/log/complete/$planId/');
+    
+    // BENAR (Ini URL API yang aman untuk Mobile):
+    var url = Uri.parse('$baseUrl/planner/api/log/complete/$planId/');
 
     var response = await http.post(
       url,
@@ -47,6 +49,31 @@ class PlannerService {
       return true;
     } else {
       return false;
+    }
+  }
+
+  Future<List<dynamic>> searchExercises(String query) async {
+    // Gunakan 10.0.2.2 untuk emulator Android, localhost untuk iOS/Web
+    // Pastikan URL endpoint backend sudah benar
+    var url = Uri.parse('$baseUrl/planner/search-exercises/?q=$query');
+
+    try {
+      var response = await http.get(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        // Backend mengembalikan {'exercises':List}, jadi kita ambil key 'exercises'
+        return data['exercises'];
+      } else {
+        print("Error search: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      print("Exception search: $e");
+      return [];
     }
   }
 }

@@ -39,8 +39,8 @@ class WorkoutPlan {
     exerciseName:
         json["exercise_name"] ??
         "Latihan", // Backend harus kirim ini atau kita fetch terpisah
-    sets: json["sets"],
-    reps: json["reps"],
+    sets: json["sets"]!= null ? json['sets'] as int : 0,
+    reps: json["reps"]!= null ? json['reps'] as int : 0,
     planDate: DateTime.parse(json["plan_date"]),
     description: json["description"],
     isCompleted: json["is_completed"] ?? false,

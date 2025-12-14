@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/workout_plan.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class WorkoutLogPage extends StatefulWidget {
   const WorkoutLogPage({super.key});
@@ -15,16 +16,19 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
   final TextEditingController _setsController = TextEditingController();
   final TextEditingController _repsController = TextEditingController();
 
-  // We need to store the selected Exercise ID to send to Django
+  // Kita perlu menyimpan ID latihan yang dipilih untuk dikirim ke Django
   int? selectedExerciseId;
+  String? selectedExerciseName; // Opsional: untuk UI feedback
 
-  // Date Selection (Default to Today)
+  // Date Selection (Default ke Hari Ini)
   String selectedYear = DateTime.now().year.toString();
   String selectedMonth = _numToMonth(DateTime.now().month);
   String selectedDay = DateTime.now().day.toString().padLeft(2, '0');
 
-  // Backend URL (Use 10.0.2.2 for Android Emulator)
-  final String domain = "http://10.0.2.2:8000";
+  // Backend URL (Gunakan 10.0.2.2 untuk Android Emulator, atau localhost untuk iOS/Web)
+  final String domain = kIsWeb
+      ? "http://127.0.0.1:8000" // Jika dijalankan di Chrome/Web
+      : "http://10.0.2.2:8000"; // Jika dijalankan di Android Emulator
 
   // --- Helper Functions ---
 
@@ -80,7 +84,6 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
   }
 
   // --- API 1: Fetch Plans for the List ---
-  // Calls your GetPlansForDateAPIView
   Future<List<WorkoutPlan>> fetchPlans() async {
     String dateString =
         "$selectedYear-${_monthToNum(selectedMonth)}-$selectedDay";
@@ -88,15 +91,19 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
       '$domain/planner/api/get-plans-for-date/?date=$dateString',
     );
 
-    // NOTE: You might need to add headers: {"Cookie": ...} here if using raw http
-    final response = await http.get(url);
+    try {
+      final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      final List<dynamic> plansJson = data['plans'] ?? [];
-      return plansJson.map((json) => WorkoutPlan.fromJson(json)).toList();
-    } else {
-      print("Fetch Error: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final List<dynamic> plansJson = data['plans'] ?? [];
+        return plansJson.map((json) => WorkoutPlan.fromJson(json)).toList();
+      } else {
+        print("Fetch Error: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      print("Exception fetching plans: $e");
       return [];
     }
   }
@@ -106,23 +113,38 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
   Future<List<Map<String, dynamic>>> searchExercises(String query) async {
     if (query.length < 2) return [];
 
-    final url = Uri.parse('$domain/planner/search-exercises/?q=$query');
-    final response = await http.get(url);
+    try {
+      final url = Uri.parse(
+        '$domain/planner/search-exercises/',
+      ).replace(queryParameters: {'q': query});
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      // Your Django view returns: {'exercises': [{'id': 1, 'name': '...'}, ...]}
-      return List<Map<String, dynamic>>.from(data['exercises']);
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(
+          (data['exercises'] as List).map(
+            (item) => item as Map<String, dynamic>,
+          ),
+        );
+      } else {
+        print("Search API Error: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      print("Search Exception: $e");
+      // Kembalikan list kosong jika error agar UI tidak crash
+      return [];
     }
-    return [];
   }
 
   // --- API 3: Add New Plan ---
-  // Calls your AddPlanAPIView
   Future<void> addPlan() async {
     if (selectedExerciseId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select an exercise")),
+        const SnackBar(
+          content: Text("Please select an exercise from the list"),
+        ),
       );
       return;
     }
@@ -136,7 +158,7 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
         url,
         headers: {
           "Content-Type": "application/json",
-          // "Cookie": ... // Again, session cookie might be needed here
+          // Jika backend butuh auth, tambahkan cookie/token di sini
         },
         body: json.encode({
           "exercise_id": selectedExerciseId,
@@ -147,24 +169,27 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
       );
 
       if (response.statusCode == 201) {
-        // 201 Created
         setState(() {
-          // Clear inputs and refresh the list
           _setsController.clear();
           _repsController.clear();
-          selectedExerciseId = null;
+          selectedExerciseId = null; // Reset selection
+          selectedExerciseName = null;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Workout Added!")));
+        // Force refresh UI (FutureBuilder akan terpanggil ulang karena setState)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Workout Added Successfully!")),
+        );
       } else {
         print("Add Error: ${response.body}");
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Failed to add workout")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to add workout: ${response.body}")),
+        );
       }
     } catch (e) {
-      print("Error: $e");
+      print("Error adding plan: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -176,6 +201,7 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
       int.parse(_monthToNum(selectedMonth)) + 1,
       0,
     ).day;
+
     List<String> days = List.generate(
       daysInMonth,
       (index) => (index + 1).toString().padLeft(2, '0'),
@@ -191,13 +217,12 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Banner (Matches Figma Visuals)
+            // 1. Banner
             Container(
               width: double.infinity,
               height: 200,
               decoration: const BoxDecoration(
-                color: Colors.grey, // Placeholder for your banner image
-                // image: DecorationImage(image: AssetImage('assets/images/banner.png'), fit: BoxFit.cover),
+                color: Color(0xFF1F2937), // Biru gelap seperti footer/backend
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
@@ -205,7 +230,6 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
               ),
               child: Stack(
                 children: [
-                  // Back button in case you navigated here from Login
                   Positioned(
                     top: 40,
                     left: 10,
@@ -237,7 +261,7 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 2. Date Pickers (Year, Month, Date)
+                  // 2. Date Pickers
                   const Text(
                     "Planned Date:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -286,24 +310,35 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
 
                   const SizedBox(height: 20),
 
-                  // 3. Exercise Input (Autocomplete)
+                  // 3. Exercise Input (FIXED Implementation)
                   const Text(
-                    "Exercises",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    "1. Cari Latihan",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 5),
-                  const Text(
-                    "Type to search:",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
+
+                  // Autocomplete Widget
                   Autocomplete<Map<String, dynamic>>(
                     optionsBuilder: (TextEditingValue textEditingValue) {
+                      // Fungsi ini sekarang aman dipanggil
                       return searchExercises(textEditingValue.text);
                     },
+
+                    // Menentukan string apa yang ditampilkan di text field saat opsi dipilih
                     displayStringForOption: (option) => option['name'],
+
                     onSelected: (Map<String, dynamic> selection) {
-                      selectedExerciseId = selection['id'];
+                      setState(() {
+                        selectedExerciseId = selection['id'];
+                      });
+                      // Opsional: Tutup keyboard setelah memilih
+                      FocusScope.of(context).unfocus();
                     },
+
                     fieldViewBuilder:
                         (context, controller, focusNode, onEditingComplete) {
                           return TextField(
@@ -312,7 +347,8 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                             onEditingComplete: onEditingComplete,
                             decoration: const InputDecoration(
                               hintText: "e.g. Bench Press",
-                              border: UnderlineInputBorder(),
+                              border:
+                                  UnderlineInputBorder(), // Atau OutlineInputBorder() sesuai selera
                               suffixIcon: Icon(Icons.search),
                             ),
                           );
@@ -322,31 +358,65 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                   const SizedBox(height: 20),
 
                   // 4. Sets & Reps Inputs
-                  const Text(
-                    "Sets & Reps",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: _setsController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: "Sets",
-                            border: UnderlineInputBorder(),
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "2. Sets",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            TextField(
+                              controller: _setsController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: "cth: 3",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 20),
                       Expanded(
-                        child: TextField(
-                          controller: _repsController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: "Reps",
-                            border: UnderlineInputBorder(),
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "3. Reps",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            TextField(
+                              controller: _repsController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                hintText: "cth: 10",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -361,18 +431,19 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(
-                          0xFF555555,
-                        ), // Dark Grey matching design
+                          0xFF1F2937,
+                        ), // Biru gelap konsisten
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       onPressed: addPlan,
                       child: const Text(
-                        "Add Planner",
+                        "Tambahkan ke Rencana",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -380,23 +451,35 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
 
                   const SizedBox(height: 30),
 
-                  // 6. Log Activities List (Visuals match Figma card)
+                  // 6. Log Activities List
                   const Text(
-                    "Your Log Activities for Today",
+                    "Rencana Latihan Tanggal Ini",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const Divider(thickness: 1, color: Colors.black),
+                  const Divider(thickness: 1, color: Colors.black12),
+
                   FutureBuilder<List<WorkoutPlan>>(
-                    future:
-                        fetchPlans(), // Reloads whenever fetchPlans is called
+                    future: fetchPlans(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.all(20),
-                          child: Center(
-                            child: Text("No activities for this date."),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "Belum ada rencana latihan pada tanggal ini.",
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ),
                         );
                       } else {
@@ -406,29 +489,38 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, index) {
                             final plan = snapshot.data![index];
-                            return Container(
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              decoration: const BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(color: Colors.grey),
-                                ),
+                            return Card(
+                              elevation: 2,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    plan.exerciseName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.blueGrey[50],
+                                  child: const Icon(
+                                    Icons.fitness_center,
+                                    color: Colors.blueGrey,
                                   ),
-                                  Text(
-                                    "${plan.sets} Sets x ${plan.reps} Reps",
-                                    style: const TextStyle(color: Colors.grey),
+                                ),
+                                title: Text(
+                                  plan.exerciseName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ],
+                                ),
+                                subtitle: Text(
+                                  "${plan.sets} set x ${plan.reps} reps",
+                                ),
+                                trailing: plan.isCompleted
+                                    ? const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      )
+                                    : const Icon(
+                                        Icons.circle_outlined,
+                                        color: Colors.grey,
+                                      ),
                               ),
                             );
                           },
@@ -436,7 +528,6 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                       }
                     },
                   ),
-                  // Extra space at bottom
                   const SizedBox(height: 50),
                 ],
               ),
@@ -447,7 +538,6 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
     );
   }
 
-  // Helper Widget for building uniform dropdowns
   Widget _buildDropdown(
     String label,
     List<String> items,
@@ -459,18 +549,24 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
         ),
+        const SizedBox(height: 4),
         Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          height: 45,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: DropdownButton<String>(
             value: items.contains(currentVal) ? currentVal : items[0],
             underline: Container(),
+            icon: const Icon(Icons.arrow_drop_down),
             items: items
                 .map(
                   (String value) => DropdownMenuItem<String>(
