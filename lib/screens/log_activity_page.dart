@@ -5,14 +5,16 @@ import '../service/planner_service.dart'; // Import service yg baru dibuat
 import '../widgets/left_drawer.dart';
 
 class LogActivityPage extends StatefulWidget {
-  const LogActivityPage({super.key});
+  final PlannerService? service; 
+  
+  const LogActivityPage({super.key, this.service});
 
   @override
   State<LogActivityPage> createState() => _LogActivityPageState();
 }
 
 class _LogActivityPageState extends State<LogActivityPage> {
-  final PlannerService _service = PlannerService();
+  late PlannerService _service = PlannerService();
 
   // State Filter
   int _selectedYear = DateTime.now().year;
@@ -42,6 +44,7 @@ class _LogActivityPageState extends State<LogActivityPage> {
   @override
   void initState() {
     super.initState();
+    _service = widget.service ?? PlannerService();
     _fetchData();
   }
 
