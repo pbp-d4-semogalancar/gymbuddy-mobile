@@ -68,7 +68,7 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Profile', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ProfileLoaderPage(),
@@ -83,7 +83,7 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('HowTo', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const HowtoPage()),
               );
@@ -99,7 +99,7 @@ class LeftDrawer extends StatelessWidget {
             ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const LogActivityPage(),
@@ -117,7 +117,7 @@ class LeftDrawer extends StatelessWidget {
             ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const CommunityPage()),
               );
