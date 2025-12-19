@@ -7,6 +7,8 @@ import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/providers/user_provider.dart'; 
+import 'package:gymbuddy/widgets/profile_picture_display.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -22,6 +24,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _totalPlans = 0;
   bool _isLoading = true;
 
+  // url profile picture
+  String? _profileImageUrl;
+
   @override
   void initState() {
     super.initState();
@@ -29,10 +34,11 @@ class _MyHomePageState extends State<MyHomePage> {
     // Gunakan addPostFrameCallback agar aman akses Provider context
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchProgress();
+      _fetchUserProfile();
     });
   }
 
-  // [PERBAIKAN] Fetch Progress dengan Autentikasi (CookieRequest)
+  // Fetch Progress dengan Autentikasi (CookieRequest)
   Future<void> _fetchProgress() async {
     final request = context.read<CookieRequest>();
     final now = DateTime.now();
@@ -75,6 +81,34 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _fetchUserProfile() async {
+    final request = context.read<CookieRequest>();
+    final userProvider = context.read<UserProvider>();
+    final userId = userProvider.userId;
+
+    const String baseUrl = "http://localhost:8000"; 
+
+    if (userId == null) return;
+
+    try {
+      final response = await request.get('$baseUrl/profile/json/$userId/');
+      
+      String? rawUrl = response['profile_picture']; 
+
+      if (mounted) {
+        setState(() {
+          if (rawUrl != null && rawUrl.isNotEmpty) {
+             _profileImageUrl = rawUrl;
+          } else {
+             _profileImageUrl = null;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _profileImageUrl = null);
+    }
+  }
+
   // --- HEADER / TOP BAR ---
   Widget _topBar() {
     return Builder(
@@ -90,14 +124,20 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 28,
+              GestureDetector(
+                onTap: () => Scaffold.of(context).openDrawer(),
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.grey.shade700,
+                  backgroundImage: _profileImageUrl != null
+                      ? NetworkImage(_profileImageUrl!)
+                      : null,
+                  child: _profileImageUrl == null
+                      ? const Icon(Icons.person, color: Colors.white)
+                      : null,
                 ),
-                onPressed: () => Scaffold.of(context).openDrawer(),
               ),
+
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
