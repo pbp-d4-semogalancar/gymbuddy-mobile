@@ -15,9 +15,9 @@ class WorkoutPlan {
   int sets;
   int reps;
   DateTime planDate;
-  String? description; // Baru
-  bool isCompleted; // Baru
-  DateTime? completedAt; // Baru
+  String? description;
+  bool isCompleted;
+  DateTime? completedAt;
 
   WorkoutPlan({
     required this.id,
@@ -32,22 +32,25 @@ class WorkoutPlan {
     this.completedAt,
   });
 
-  factory WorkoutPlan.fromJson(Map<String, dynamic> json) => WorkoutPlan(
-    id: json["id"],
-    userId: json["user"],
-    exerciseId: json["exercise_id"] ?? 0, // Sesuaikan key dari JSON backend
-    exerciseName:
-        json["exercise_name"] ??
-        "Latihan", // Backend harus kirim ini atau kita fetch terpisah
-    sets: json["sets"]!= null ? json['sets'] as int : 0,
-    reps: json["reps"]!= null ? json['reps'] as int : 0,
-    planDate: DateTime.parse(json["plan_date"]),
-    description: json["description"],
-    isCompleted: json["is_completed"] ?? false,
-    completedAt: json["completed_at"] != null
-        ? DateTime.parse(json["completed_at"])
-        : null,
-  );
+  factory WorkoutPlan.fromJson(Map<String, dynamic> json) {
+    return WorkoutPlan(
+      // [FIX] Gunakan (json['key'] is int) ? value : 0
+      // Ini mencegah crash jika value-nya null atau string
+      id: json["id"] is int ? json["id"] : 0,
+      userId: json["user"] is int ? json["user"] : 0,
+      exerciseId: json["exercise_id"] is int ? json["exercise_id"] : 0,
+      exerciseName: json["exercise_name"]?.toString() ?? "Latihan",
+      sets: json["sets"] is int ? json["sets"] : 0,
+      reps: json["reps"] is int ? json["reps"] : 0,
+      planDate:
+          DateTime.tryParse(json["plan_date"].toString()) ?? DateTime.now(),
+      description: json["description"]?.toString(),
+      isCompleted: json["is_completed"] ?? false,
+      completedAt: json["completed_at"] != null
+          ? DateTime.tryParse(json["completed_at"].toString())
+          : null,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "id": id,

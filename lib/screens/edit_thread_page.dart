@@ -1,14 +1,12 @@
-// lib/screens/edit_thread_page.dart
-
 import 'package:flutter/material.dart';
-import 'dart:async';
-import '../models/community_thread.dart'; 
-import 'package:provider/provider.dart'; 
-import 'package:pbp_django_auth/pbp_django_auth.dart'; 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../models/community_thread.dart';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class EditThreadPage extends StatefulWidget {
   final NewThreadData currentThread;
-  final int threadIndex; // Menggunakan ID Django
+  final int threadIndex;
 
   const EditThreadPage({
     super.key,
@@ -26,135 +24,126 @@ class _EditThreadPageState extends State<EditThreadPage> {
   late TextEditingController _contentController;
   bool _isLoading = false;
 
+  final String domain = kIsWeb
+      ? "http://127.0.0.1:8000"
+      : "http://10.0.2.2:8000";
+
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.currentThread.title);
-    _contentController = TextEditingController(text: widget.currentThread.content);
+    _contentController = TextEditingController(
+      text: widget.currentThread.content,
+    );
   }
 
   Future<void> _submitEdit(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
-
     final request = context.read<CookieRequest>();
-    
-    setState(() { _isLoading = true; });
+    setState(() => _isLoading = true);
 
     try {
-      // Data dikirim sebagai Form Data (String Map)
-      final Map<String, dynamic> data = {
-        "title": _titleController.text,
-        "content": _contentController.text,
-      };
+      final response = await request.postJson(
+        "$domain/community/edit-flutter/${widget.threadIndex}/",
+        {"title": _titleController.text, "content": _contentController.text},
+      );
 
-      // PERBAIKAN URL: Menggunakan localhost
-      // Menggunakan request.post (Non-JSON) untuk endpoint AJAX
-     final response = await request.post(
-  "http://localhost:8000/community/api/thread/${widget.threadIndex}/edit/",
-  {
-    "title": _titleController.text,
-    "content": _contentController.text,
-  },
-);
-
-      if (context.mounted) {
-          // Asumsi respons AJAX sukses adalah {success: true}
-          if (response.containsKey('success') && response['success'] == true) { 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("✅ Thread berhasil diperbarui!")),
-              );
-
-              // Memanggil constructor dengan named required arguments
-              final updatedThread = NewThreadData(
-                id: widget.currentThread.id, 
-                title: _titleController.text,
-                content: _contentController.text,
-                username: widget.currentThread.username,
-                isMine: widget.currentThread.isMine,
-              );
-
-              Navigator.pop(context, updatedThread);
-          } else {
-              // Tangani error validasi form dari Django
-              String errorMsg = response['error'] ?? "Gagal menyimpan. Pastikan Anda pemilik thread.";
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("❌ Gagal menyimpan perubahan: $errorMsg")),
-              );
-          }
+      if (response['status'] == 'success') {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Perubahan berhasil disimpan!")),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Gagal menyimpan perubahan.")),
+          );
+        }
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Terjadi kesalahan koneksi/server.")),
-        );
-      }
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
-      setState(() { _isLoading = false; });
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Thread'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Edit Thread',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.grey.shade900,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                "Mengedit Thread milik: ${widget.currentThread.username}",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 20.0),
-              
-              // Field Judul
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Judul Thread', border: OutlineInputBorder()),
-                validator: (v) => v == null || v.isEmpty ? 'Judul tidak boleh kosong!' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Judul Thread',
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  labelStyle: TextStyle(color: Colors.black),
+                ),
+                cursorColor: Colors.black,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Judul tidak boleh kosong!' : null,
               ),
               const SizedBox(height: 12.0),
-
-              // Field Konten
               TextFormField(
                 controller: _contentController,
-                decoration: const InputDecoration(labelText: 'Isi Konten Diskusi', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Isi Konten Diskusi',
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  labelStyle: TextStyle(color: Colors.black),
+                ),
+                cursorColor: Colors.black,
                 keyboardType: TextInputType.multiline,
                 maxLines: 5,
-                validator: (v) => v == null || v.isEmpty ? 'Konten tidak boleh kosong!' : null,
+                validator: (v) => v == null || v.isEmpty
+                    ? 'Konten tidak boleh kosong!'
+                    : null,
               ),
               const SizedBox(height: 20.0),
-
-              ElevatedButton(
-                onPressed: _isLoading ? null : () => _submitEdit(context),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : () => _submitEdit(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black, // TOMBOL HITAM
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                          child: CircularProgressIndicator(color: Colors.white),
                         )
                       : const Text(
                           'SIMPAN PERUBAHAN',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               ),
             ],
           ),

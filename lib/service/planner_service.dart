@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/workout_plan.dart';
 
 class PlannerService {
   // Ganti URL ini dengan URL backend Django Anda (untuk emulator Android gunakan 10.0.2.2)
@@ -25,14 +24,20 @@ class PlannerService {
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      Map<String, dynamic> data = json.decode(response.body);
+      if (data['plans'] != null) {
+        for (var plan in data['plans']) {
+          plan['sets'] = plan['sets'] ?? 0;
+          plan['reps'] = plan['reps'] ?? 0;
+        }
+      }
+      return data;
     } else {
       throw Exception('Gagal memuat log latihan');
     }
   }
 
   Future<bool> completeLog(int planId, String description) async {
-    
     // BENAR (Ini URL API yang aman untuk Mobile):
     var url = Uri.parse('$baseUrl/planner/api/log/complete/$planId/');
 

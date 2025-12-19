@@ -1,165 +1,168 @@
-// lib/screens/create_thread_page.dart
-
 import 'package:flutter/material.dart';
-import 'dart:async'; 
-import '../models/community_thread.dart'; 
-import 'package:provider/provider.dart'; 
-import 'package:pbp_django_auth/pbp_django_auth.dart'; 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../models/community_thread.dart';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class CreateThreadPage extends StatefulWidget {
-  const CreateThreadPage({super.key}); 
+  const CreateThreadPage({super.key});
 
   @override
   State<CreateThreadPage> createState() => _CreateThreadPageState();
 }
 
 class _CreateThreadPageState extends State<CreateThreadPage> {
-  final _formKey = GlobalKey<FormState>(); 
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  bool _isLoading = false; 
+  bool _isLoading = false;
 
-  void _resetForm() {
-    _titleController.clear();
-    _contentController.clear();
-    _formKey.currentState?.reset();
-  }
+  // URL Domain
+  final String domain = kIsWeb
+      ? "http://127.0.0.1:8000"
+      : "http://10.0.2.2:8000";
 
   Future<void> _submitThread(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) {
-      return; 
-    }
-    
-    final request = context.read<CookieRequest>();
-    
-    if (!request.loggedIn) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("❌ Anda harus login terlebih dahulu!")),
-    );
-    setState(() {
-      _isLoading = false;
-    });
-    return;
-  }
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true; 
-    });
+    final request = context.read<CookieRequest>();
+
+    if (!request.loggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("❌ Anda harus login terlebih dahulu!")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
 
     try {
-      final Map<String, dynamic> data = {
+      // [PERBAIKAN 1] Gunakan endpoint 'api/threads/' yang sudah ada di urls.py
+      // Endpoint ini menggunakan ThreadListCreateAPIView yang aman untuk mobile.
+      final response = await request.post("$domain/community/api/threads/", {
         "title": _titleController.text,
         "content": _contentController.text,
-      };
+      });
 
-      print("Logged in: ${request.loggedIn}");
-      print("Mengirim data ke server: $data");
+      // [PERBAIKAN 2] Sesuaikan parsing respon dengan ThreadSerializer
+      // ThreadSerializer mengembalikan field: id, title, content, author_username, date_created
 
+      // Cek apakah response memiliki ID (tanda sukses dibuat)
+      if (response != null && response['id'] != null) {
+        final newThread = NewThreadData(
+          id: response['id'],
+          title: response['title'],
+          content: response['content'],
+          // Serializer Anda mengirim key 'author_username', bukan 'username'
+          username:
+              response['author_username'] ??
+              request.jsonData['username'] ??
+              "Me",
+          isMine: true,
+        );
 
-      // PERBAIKAN URL: Menggunakan localhost untuk Chrome
-      final response = await request.post(
-       "http://localhost:8000/community/api/thread/create/", 
-        data,
-      );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("✅ Thread berhasil dibuat!")),
+          );
+          Navigator.pop(context, newThread);
+        }
+      } else {
+        // Handle error jika ada pesan detail dari Django REST Framework
+        String errorMsg = "Gagal membuat thread.";
+        if (response['detail'] != null) {
+          errorMsg = response['detail'];
+        }
 
-      print("Response dari server: $response");
-
-      if (context.mounted) {
-          if (response.containsKey('id') && response['id'] != null) { 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("✅ Thread berhasil dibuat!")),
-              );
-              
-              // FIX: Memanggil constructor dengan named required arguments
-              final newThread = NewThreadData(
-                id: response['id'] as int, // <-- KIRIM ID DARI RESPONSE
-                title: response['title'] as String, 
-                content: response['content'] as String, 
-                username: response['username'], 
-                isMine: true, 
-              );
-              
-              _resetForm(); 
-              Navigator.pop(context, newThread); 
-              
-          } else {
-              // Menangkap error 403 Forbidden atau validasi gagal
-              String errorMsg = response['detail'] ?? "Gagal posting thread. Pastikan Anda sudah login.";
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("❌ Gagal posting: $errorMsg")),
-              );
-          }
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("❌ $errorMsg")));
+        }
       }
     } catch (e) {
-      if (context.mounted) {
-        // Menangkap error koneksi umum
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Terjadi kesalahan koneksi. Pastikan server Django berjalan.")),
-        );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e")));
       }
     } finally {
-      setState(() {
-        _isLoading = false; 
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buat Thread Baru'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Thread Baru',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.grey.shade900,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Field Judul
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Judul Thread', border: OutlineInputBorder()),
-                validator: (v) => v == null || v.isEmpty ? 'Judul tidak boleh kosong!' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Judul Thread',
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  labelStyle: TextStyle(color: Colors.black),
+                ),
+                cursorColor: Colors.black,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Judul tidak boleh kosong!' : null,
               ),
               const SizedBox(height: 12.0),
-
-              // Field Konten
               TextFormField(
                 controller: _contentController,
-                decoration: const InputDecoration(labelText: 'Isi Konten Diskusi', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Isi Konten Diskusi',
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  labelStyle: TextStyle(color: Colors.black),
+                ),
+                cursorColor: Colors.black,
                 keyboardType: TextInputType.multiline,
                 maxLines: 5,
-                validator: (v) => v == null || v.isEmpty ? 'Konten tidak boleh kosong!' : null,
+                validator: (v) => v == null || v.isEmpty
+                    ? 'Konten tidak boleh kosong!'
+                    : null,
               ),
               const SizedBox(height: 20.0),
-
-              ElevatedButton(
-                onPressed: _isLoading ? null : () => _submitThread(context), 
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : () => _submitThread(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                          child: CircularProgressIndicator(color: Colors.white),
                         )
                       : const Text(
                           'POST THREAD',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
               ),
             ],
           ),

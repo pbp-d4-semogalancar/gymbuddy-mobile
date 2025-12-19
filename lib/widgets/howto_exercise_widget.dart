@@ -27,7 +27,7 @@ class HowtoExerciseCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text("Muscle: ${ex.mainMuscle}"),
-              Text("Equipment: ${ex.equipment ?? '-'}"),
+              Text("Equipment: ${ex.equipment}"),
             ],
           ),
         ),
@@ -45,10 +45,13 @@ class HowtoExerciseCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Muscle: ${ex.mainMuscle}"),
-              Text("Equipment: ${ex.equipment ?? '-'}"),
+              Text("Equipment: ${ex.equipment}"),
               const SizedBox(height: 12),
-              const Text("Instructions:", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(ex.instructions ?? "No instructions"),
+              const Text(
+                "Instructions:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(ex.instructions),
             ],
           ),
         ),
@@ -56,7 +59,7 @@ class HowtoExerciseCard extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Close"),
-          )
+          ),
         ],
       ),
     );
