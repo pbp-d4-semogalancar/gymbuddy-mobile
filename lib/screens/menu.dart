@@ -7,6 +7,7 @@ import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'user_profile/profile_loader_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -331,7 +332,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const HowtoPage(),
+                        builder: (context) => const ProfileLoaderPage(),
                       ),
                     );
                   },
