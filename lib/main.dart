@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gymbuddy/screens/menu.dart';
 import 'package:gymbuddy/screens/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/providers/user_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,14 +15,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Provider(
-      create: (_) {
-        CookieRequest request = CookieRequest();
-        return request;
-      },
+    return MultiProvider(
+      providers: [
+        Provider(
+          create: (_) {
+            CookieRequest request = CookieRequest();
+            return request;
+          },
+        ),
+
+        // UserProvider (untuk ID)
+        ChangeNotifierProvider(
+          create: (_) => UserProvider(),
+        ),
+      ],
 
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Gymbuddy Mobile',
         theme: ThemeData(
           // This is the theme of your application.
           //

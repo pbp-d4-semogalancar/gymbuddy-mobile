@@ -21,7 +21,24 @@ class _RegisterPageState extends State<RegisterPage> {
     final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: RichText(
+          text: const TextSpan(
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            children: <TextSpan>[
+              TextSpan(
+                text: 'Gym',
+                style: TextStyle(color: Colors.grey),
+              ),
+              TextSpan(
+                text: 'Buddy',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.grey[900],
+        foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -41,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
+                children: [
                   const Text(
                     'Register',
                     style: TextStyle(
@@ -49,90 +66,85 @@ class _RegisterPageState extends State<RegisterPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 30.0),
-                  TextFormField(
+                  const SizedBox(height: 20.0),
+
+                  // Username Field
+                  TextField(
                     controller: _usernameController,
+                    cursorColor: Colors.black,
                     decoration: const InputDecoration(
                       labelText: 'Username',
-                      hintText: 'Enter your username',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 8.0,
-                      ),
+                      floatingLabelStyle: TextStyle(color: Colors.black),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your username';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 12.0),
-                  TextFormField(
+
+                  // Password Field
+                  TextField(
                     controller: _passwordController,
+                    cursorColor: Colors.black,
                     decoration: const InputDecoration(
                       labelText: 'Password',
-                      hintText: 'Enter your password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 8.0,
-                      ),
+                      floatingLabelStyle: TextStyle(color: Colors.black),
                     ),
                     obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 12.0),
-                  TextFormField(
+
+                  // Confirm Password Field
+                  TextField(
                     controller: _confirmPasswordController,
+                    cursorColor: Colors.black,
                     decoration: const InputDecoration(
                       labelText: 'Confirm Password',
-                      hintText: 'Confirm your password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 8.0,
-                      ),
+                      floatingLabelStyle: TextStyle(color: Colors.black),
                     ),
                     obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 24.0),
+
                   ElevatedButton(
                     onPressed: () async {
                       String username = _usernameController.text;
-                      String password1 = _passwordController.text;
-                      String password2 = _confirmPasswordController.text;
+                      String password = _passwordController.text;
+                      String confirmPassword = _confirmPasswordController.text;
 
-                      // Check credentials
-                      // TODO: Change the URL and don't forget to add trailing slash (/) at the end of URL!
-                      // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
-                      // If you using chrome,  use URL http://localhost:8000
+                      if (password != confirmPassword) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Passwords do not match!'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      // [PERBAIKAN PENTING]
+                      // Gunakan '/auth/api/register/'
+                      // Perhatikan parameter di backend Anda: 'password1' dan 'password2'
+                      // Backend Anda membaca json.loads(request.body) di register_user_api
                       final response = await request.postJson(
-                        "http://localhost:8000/auth/api/register/",
-                        jsonEncode({
-                          "username": username,
-                          "password1": password1,
-                          "password2": password2,
+                        "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/auth/api/register/",
+                        jsonEncode(<String, String>{
+                          'username': username,
+                          'password1':
+                              password, // Sesuaikan key dengan backend (password1)
+                          'password2':
+                              confirmPassword, // Sesuaikan key dengan backend (password2)
                         }),
                       );
+
                       if (context.mounted) {
                         if (response['status'] == true) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -148,8 +160,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Failed to register!'),
+                            SnackBar(
+                              content: Text(
+                                response['message'] ?? 'Failed to register!',
+                              ),
                             ),
                           );
                         }
@@ -157,8 +171,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 50),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Colors.black,
+                      minimumSize: const Size(double.infinity, 50),
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Register'),

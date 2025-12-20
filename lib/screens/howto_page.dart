@@ -1,7 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/exercise.dart';
+import 'package:gymbuddy/screens/community_page.dart';
+import 'package:gymbuddy/screens/log_activity_page.dart';
+import 'package:gymbuddy/screens/menu.dart';
 import 'package:gymbuddy/service/howto_service.dart';
 import 'package:gymbuddy/widgets/left_drawer.dart';
+import 'package:gymbuddy/widgets/user_avatar.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -139,9 +144,9 @@ class _HowtoPageState extends State<HowtoPage> {
         }
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal update favorite: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal update favorite: $e")));
     }
   }
 
@@ -181,8 +186,6 @@ class _HowtoPageState extends State<HowtoPage> {
     });
   }
 
-
-
   String? _muscleAssetPath(String apiLabel) {
     final key = _norm(apiLabel);
     final file = _muscleAsset[key];
@@ -191,15 +194,25 @@ class _HowtoPageState extends State<HowtoPage> {
 
   String _equipmentCategoryOf(String? rawEquipment) {
     final key = _norm(rawEquipment ?? "");
-    if (_equipmentToCategory.containsKey(key)) return _equipmentToCategory[key]!;
+    if (_equipmentToCategory.containsKey(key)) {
+      return _equipmentToCategory[key]!;
+    }
 
     if (key.contains("barbell")) return "barbell";
     if (key.contains("dumbbell")) return "dumbbell";
     if (key.contains("cable")) return "cable";
     if (key.contains("sled")) return "sled";
     if (key.contains("plyometric")) return "plyometric";
-    if (key.contains("smith") || key.contains("lever") || key.contains("machine")) return "smith";
-    if (key.contains("band") || key.contains("assist") || key.contains("suspens")) return "bands";
+    if (key.contains("smith") ||
+        key.contains("lever") ||
+        key.contains("machine")) {
+      return "smith";
+    }
+    if (key.contains("band") ||
+        key.contains("assist") ||
+        key.contains("suspens")) {
+      return "bands";
+    }
     if (key.contains("body")) return "body weight";
     return "body weight";
   }
@@ -231,8 +244,13 @@ class _HowtoPageState extends State<HowtoPage> {
             final isFav = _favoriteIds.contains(ex.id);
 
             return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 560),
                 child: Padding(
@@ -246,7 +264,10 @@ class _HowtoPageState extends State<HowtoPage> {
                           Expanded(
                             child: Text(
                               ex.exerciseName,
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           IconButton(
@@ -285,7 +306,7 @@ class _HowtoPageState extends State<HowtoPage> {
                               children: [
                                 const Icon(Icons.handyman, size: 18),
                                 const SizedBox(width: 6),
-                                Text("Equipment: ${ex.equipment ?? "-"}"),
+                                Text("Equipment: ${ex.equipment}"),
                               ],
                             ),
                           ],
@@ -298,7 +319,10 @@ class _HowtoPageState extends State<HowtoPage> {
                           children: const [
                             Icon(Icons.article_outlined, size: 18),
                             SizedBox(width: 6),
-                            Text("Instructions:", style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              "Instructions:",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
@@ -308,7 +332,10 @@ class _HowtoPageState extends State<HowtoPage> {
                         child: SingleChildScrollView(
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text((ex.instructions ?? "-").trim(), style: const TextStyle(height: 1.45)),
+                            child: Text(
+                              (ex.instructions).trim(),
+                              style: const TextStyle(height: 1.45),
+                            ),
                           ),
                         ),
                       ),
@@ -341,7 +368,11 @@ class _HowtoPageState extends State<HowtoPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      drawer: const LeftDrawer(), 
+      drawer: const LeftDrawer(),
+
+      // [BARU] Panggil footer di sini agar FIXED di bawah
+      bottomNavigationBar: _footer(),
+
       body: SafeArea(
         child: Column(
           children: [
@@ -356,7 +387,6 @@ class _HowtoPageState extends State<HowtoPage> {
                     const SizedBox(height: 14),
                     _exerciseSection(request),
                     const SizedBox(height: 30),
-                    _footer(),
                   ],
                 ),
               ),
@@ -376,24 +406,45 @@ class _HowtoPageState extends State<HowtoPage> {
           decoration: BoxDecoration(
             color: Colors.grey.shade900,
             boxShadow: [
-              BoxShadow(
-                blurRadius: 10,
-                color: Colors.black.withOpacity(0.25),
-              )
+              BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.25)),
             ],
           ),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () => Scaffold.of(context).openDrawer(),
+              // POIN 2: Icon Profile yang membuka Left Drawer
+              UserAvatar(
+                isCurrentUser: true, 
+                radius: 18,
+                onTap: () => Scaffold.of(context).openDrawer(),
               ),
+
+              // Spacer ini akan mendorong widget setelahnya ke paling kanan
               const Spacer(),
-              Text(
-                "GymBuddy",
-                style: TextStyle(
-                  color: Colors.grey.shade200,
-                  fontWeight: FontWeight.bold,
+
+              // POIN 3: Teks "GymBuddy" fixed di pojok kanan dengan warna custom
+              Padding(
+                padding: const EdgeInsets.only(
+                  right: 8.0,
+                ), // Sedikit jarak dari tepi kanan
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'Gym',
+                        style: const TextStyle(color: Colors.grey), // Warna Abu
+                      ),
+                      TextSpan(
+                        text: 'Buddy',
+                        style: TextStyle(
+                          color: Colors.grey.shade200,
+                        ), // Warna Putih Terang
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -404,23 +455,75 @@ class _HowtoPageState extends State<HowtoPage> {
   }
 
   Widget _headerBanner() {
-    return Stack(
-      children: [
-        Image.asset("lib/Assets/Background.jpg", width: double.infinity, height: 170, fit: BoxFit.cover),
-        Container(width: double.infinity, height: 170, color: Colors.black.withOpacity(0.40)),
-        const Positioned(
-          left: 18,
-          bottom: 16,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("🔥 Workout Explorer", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text("Find the perfect exercise for every muscle!", style: TextStyle(color: Colors.white, fontSize: 13)),
-            ],
-          ),
+    return ClipRRect(
+      // REQUIREMENT: Sudut lengkung hanya di bagian bawah
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+      child: SizedBox(
+        width: double.infinity,
+        height: 170, // Sedikit dipertinggi agar lebih proporsional
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // REQUIREMENT: Efek Buram pada Gambar
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(
+                sigmaX: 1,
+                sigmaY: 1,
+              ), // Tingkat keburaman
+              child: Image.asset(
+                "lib/Assets/Background.jpg",
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // Overlay Gelap (Agar tulisan tetap terbaca di atas blur)
+            Container(color: Colors.black.withOpacity(0.3)),
+
+            // Konten Teks
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                ), // Jarak aman kiri-kanan
+                child: Column(
+                  mainAxisSize: MainAxisSize
+                      .min, // Agar Column tidak memenuhi tinggi layar
+                  crossAxisAlignment:
+                      CrossAxisAlignment.center, // Rata tengah horizontal
+                  children: const [
+                    Text(
+                      "Workout Explorer",
+                      textAlign: TextAlign.center, // Rata tengah teks
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 2),
+                            blurRadius: 4.0,
+                            color: Colors.black54,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Find the perfect exercise for every muscle!",
+                      textAlign: TextAlign.center, // Rata tengah teks
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -434,7 +537,8 @@ class _HowtoPageState extends State<HowtoPage> {
           items: muscleOptions,
           isSelected: (x) => selectedMuscle == x,
           imagePathOf: _muscleAssetPath,
-          onTap: (m) => setState(() => selectedMuscle = (selectedMuscle == m ? null : m)),
+          onTap: (m) =>
+              setState(() => selectedMuscle = (selectedMuscle == m ? null : m)),
         ),
         const SizedBox(height: 14),
         _sectionTitle("Filter by Equipment:"),
@@ -443,7 +547,11 @@ class _HowtoPageState extends State<HowtoPage> {
           items: equipmentCategoryOptions,
           isSelected: (x) => selectedEquipmentCategory == x,
           imagePathOf: _equipmentCategoryAssetPath,
-          onTap: (e) => setState(() => selectedEquipmentCategory = (selectedEquipmentCategory == e ? null : e)),
+          onTap: (e) => setState(
+            () => selectedEquipmentCategory = (selectedEquipmentCategory == e
+                ? null
+                : e),
+          ),
         ),
         const SizedBox(height: 12),
         Padding(
@@ -454,12 +562,19 @@ class _HowtoPageState extends State<HowtoPage> {
             children: [
               ElevatedButton(
                 onPressed: _applyFilter,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text("Apply Filters"),
               ),
               OutlinedButton.icon(
-                onPressed: () => setState(() => showFavoritesOnly = !showFavoritesOnly),
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.black, side: const BorderSide(color: Colors.black)),
+                onPressed: () =>
+                    setState(() => showFavoritesOnly = !showFavoritesOnly),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  side: const BorderSide(color: Colors.black),
+                ),
                 icon: Icon(showFavoritesOnly ? Icons.star : Icons.star_border),
                 label: Text(_loadingBookmarks ? "Loading..." : "Favorites"),
               ),
@@ -499,8 +614,17 @@ class _HowtoPageState extends State<HowtoPage> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: selected ? Colors.black : Colors.transparent, width: 2),
-                      boxShadow: [BoxShadow(blurRadius: 8, offset: const Offset(0, 4), color: Colors.black.withOpacity(0.12))],
+                      border: Border.all(
+                        color: selected ? Colors.black : Colors.transparent,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                          color: Colors.black.withOpacity(0.12),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: path == null
@@ -509,7 +633,13 @@ class _HowtoPageState extends State<HowtoPage> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11)),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11),
+                  ),
                 ],
               ),
             ),
@@ -526,26 +656,42 @@ class _HowtoPageState extends State<HowtoPage> {
       future: exercisesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(padding: EdgeInsets.all(36), child: Center(child: CircularProgressIndicator()));
+          return const Padding(
+            padding: EdgeInsets.all(36),
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
         if (snapshot.hasError) {
-          return Padding(padding: const EdgeInsets.all(16), child: Text("Error: ${snapshot.error}"));
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text("Error: ${snapshot.error}"),
+          );
         }
 
         var items = snapshot.data ?? [];
-        items = items.where(_passesEquipmentCategory).where(_passesFavorites).toList();
+        items = items
+            .where(_passesEquipmentCategory)
+            .where(_passesFavorites)
+            .toList();
 
         return LayoutBuilder(
           builder: (context, c) {
             final w = c.maxWidth;
-            final crossAxisCount = w < 520 ? 1 : w < 900 ? 2 : 3;
+            final crossAxisCount = w < 520
+                ? 1
+                : w < 900
+                ? 2
+                : 3;
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("${items.length} Exercises Found:", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    "${items.length} Exercises Found:",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 10),
                   GridView.builder(
                     shrinkWrap: true,
@@ -554,10 +700,11 @@ class _HowtoPageState extends State<HowtoPage> {
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
-                      childAspectRatio: w < 520 ? 3.2 : 2.3,
+                      childAspectRatio: w < 520 ? 2.4 : 1.8,
                     ),
                     itemCount: items.length,
-                    itemBuilder: (context, i) => _exerciseCard(request, items[i]),
+                    itemBuilder: (context, i) =>
+                        _exerciseCard(request, items[i]),
                   ),
                 ],
               ),
@@ -575,21 +722,32 @@ class _HowtoPageState extends State<HowtoPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(blurRadius: 12, offset: const Offset(0, 6), color: Colors.black.withOpacity(0.12))],
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.12),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 8), // Padding disesuaikan
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Baris Judul & Icon Favorite
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
                   ex.exerciseName,
-                  maxLines: 1,
+                  maxLines:
+                      2, // Izinkan 2 baris agar judul panjang tidak terpotong jelek
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                 ),
               ),
               IconButton(
@@ -599,29 +757,62 @@ class _HowtoPageState extends State<HowtoPage> {
                 onPressed: () => _toggleFavorite(request, ex),
                 icon: Icon(isFav ? Icons.star : Icons.star_border),
                 color: Colors.black,
+                iconSize: 22,
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text("Target Muscle: ${ex.mainMuscle}", style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 4),
-          Text("Equipment: ${ex.equipment ?? "-"}", style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Text(
-              ex.instructions ?? "-",
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade700, height: 1.3),
-            ),
+
+          const SizedBox(height: 8),
+
+          // Informasi Target & Equipment
+          Text(
+            "Target: ${ex.mainMuscle}",
+            style: const TextStyle(fontSize: 12, color: Colors.black87),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
+          Text(
+            "Equipment: ${ex.equipment ?? '-'}",
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+
+          // Spacer ini berguna agar jika kartu agak tinggi, tombol 'Details'
+          // tetap terdorong rapi ke bawah. Jika kartu pendek, ia tidak makan tempat.
+          const Spacer(),
+
+          // Tombol Details (Sudah naik karena deskripsi dihapus)
           Align(
             alignment: Alignment.bottomRight,
-            child: TextButton(
-              onPressed: () => _showExerciseDetailModal(request, ex),
-              style: TextButton.styleFrom(foregroundColor: Colors.black), // <-- Details hitam
-              child: const Text("Details"),
+            child: SizedBox(
+              height: 30, // Tinggi tombol lebih compact
+              child: TextButton(
+                onPressed: () => _showExerciseDetailModal(request, ex),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Details",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 10,
+                    ), // Icon panah kecil pemanis
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -630,25 +821,57 @@ class _HowtoPageState extends State<HowtoPage> {
   }
 
   Widget _footer() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      color: Colors.grey.shade900,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("GymBuddy", style: TextStyle(color: Colors.grey.shade200, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text("Your ultimate workout companion.", style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
-        ],
-      ),
+    return BottomNavigationBar(
+      backgroundColor: Colors.grey.shade900, // Latar belakang gelap
+      selectedItemColor: Colors.white, // Icon aktif (Putih)
+      unselectedItemColor: Colors.grey, // Icon tidak aktif (Abu)
+      type: BottomNavigationBarType
+          .fixed, // Fixed agar label muncul & tidak bergeser
+      currentIndex: 1, // Index 1 = Halaman "How To" (Tanda Tanya)
+      onTap: (index) {
+        if (index == 1) return; // Sedang di halaman ini, tidak perlu aksi
+
+        Widget page;
+        switch (index) {
+          case 0:
+            page = MyHomePage(); // Pastikan file menu.dart diimport
+            break;
+          case 2:
+            page = const LogActivityPage();
+            break;
+          case 3:
+            page =
+                const CommunityPage(); // Pastikan file community_page.dart diimport
+            break;
+          default:
+            return;
+        }
+
+        // Pindah halaman
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => page),
+        );
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.help_outline),
+          label: 'How To',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Log'),
+        BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
+      ],
     );
   }
 
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
     );
   }
 }

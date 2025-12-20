@@ -3,6 +3,7 @@ import 'package:gymbuddy/screens/register.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/providers/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,7 +22,27 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: RichText(
+          text: const TextSpan(
+            style: TextStyle(
+              fontSize: 24, // Ukuran font
+              fontWeight: FontWeight.bold, // Tebal
+            ),
+            children: <TextSpan>[
+              TextSpan(
+                text: 'Gym',
+                style: TextStyle(color: Colors.grey), // Warna Abu
+              ),
+              TextSpan(
+                text: 'Buddy',
+                style: TextStyle(color: Colors.white), // Warna Putih
+              ),
+            ],
+          ),
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.grey[900],
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -43,72 +64,83 @@ class _LoginPageState extends State<LoginPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 30.0),
+                  const SizedBox(height: 20.0),
+
+                  // Username Field
                   TextField(
                     controller: _usernameController,
+                    cursorColor: Colors.black,
                     decoration: const InputDecoration(
                       labelText: 'Username',
-                      hintText: 'Enter your username',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
                       ),
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                      floatingLabelStyle: TextStyle(color: Colors.black),
                     ),
                   ),
                   const SizedBox(height: 12.0),
+
+                  // Password Field
                   TextField(
                     controller: _passwordController,
+                    cursorColor: Colors.black,
                     decoration: const InputDecoration(
                       labelText: 'Password',
-                      hintText: 'Enter your password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
                       ),
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                      floatingLabelStyle: TextStyle(color: Colors.black),
                     ),
                     obscureText: true,
                   ),
                   const SizedBox(height: 24.0),
+
                   ElevatedButton(
                     onPressed: () async {
                       String username = _usernameController.text;
                       String password = _passwordController.text;
 
-                      // Check credentials
-                      // Change the URL and don't forget to add trailing slash (/) at the end of URL!
-                      // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
-                      // If you using chrome,  use URL http://localhost:8000
-                      final response = await request.login( "http://localhost:8000/auth/api/login/", {
-                        'username': username,
-                        'password': password,
-                      });
+                      // [PERBAIKAN PENTING]
+                      // Gunakan '/auth/api/login/' agar masuk ke fungsi 'login_user_api' di backend.
+                      // Fungsi ini mengembalikan JSON dan TIDAK melakukan redirect error.
+                      final response = await request.login(
+                        "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/auth/api/login/",
+                        {'username': username, 'password': password},
+                      );
 
                       if (request.loggedIn) {
                         String message = response['message'];
                         String uname = response['username'];
+                        int uid = response['user_id'];
+
+                        // simpan ID ke UserProvider
+                        context.read<UserProvider>().setUser(uid, uname);
+
                         if (context.mounted) {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => MyHomePage()),
+                              builder: (context) => const MyHomePage(),
+                            ),
                           );
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(
-                                  content:
-                                  Text("$message Welcome, $uname.")),
-                            );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("$message Selamat datang, $uname."),
+                            ),
+                          );
                         }
                       } else {
                         if (context.mounted) {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text('Login Failed'),
-                              content: Text(response['message']),
+                              title: const Text('Login Gagal'),
+                              content: Text(
+                                response['message'] ??
+                                    "Username atau password salah.",
+                              ),
                               actions: [
                                 TextButton(
                                   child: const Text('OK'),
@@ -124,8 +156,8 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 50),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Colors.black,
+                      minimumSize: const Size(double.infinity, 50),
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Login'),
@@ -143,8 +175,9 @@ class _LoginPageState extends State<LoginPage> {
                     child: Text(
                       'Don\'t have an account? Register',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Colors.grey[900],
                         fontSize: 16.0,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),

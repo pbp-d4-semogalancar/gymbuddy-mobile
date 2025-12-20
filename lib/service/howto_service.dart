@@ -4,7 +4,7 @@ import 'package:gymbuddy/models/exercise.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
 class HowToService {
-  static const String apiBase = "http://localhost:8000/howto/api";
+  static const String apiBase = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/howto/api";
 
   static Future<List<Exercise>> fetchExercises({String? muscle, String? equipment}) async {
     final uri = Uri.parse("$apiBase/list/").replace(

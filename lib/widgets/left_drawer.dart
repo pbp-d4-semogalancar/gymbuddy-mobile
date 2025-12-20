@@ -3,8 +3,11 @@ import 'package:gymbuddy/screens/community_page.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
+import 'package:gymbuddy/screens/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:gymbuddy/screens/login.dart';
+import 'package:gymbuddy/screens/user_profile/profile_loader_page.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -14,13 +17,14 @@ class LeftDrawer extends StatelessWidget {
     final request = context.watch<CookieRequest>();
 
     return Drawer(
+      // Background gelap agar tulisan putih terlihat
+      backgroundColor: Colors.grey.shade900,
       child: ListView(
         children: [
           const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-            ),
+            decoration: BoxDecoration(color: Colors.black),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'GymBuddy',
@@ -31,101 +35,125 @@ class LeftDrawer extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                Padding(padding: EdgeInsets.all(10)),
-                Text("Say no to olahraga ribet! 💪🏋️‍♂️",
+                SizedBox(height: 10),
+                Text(
+                  "Your ultimate workout companion",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
+                    color: Colors.white70,
                     fontWeight: FontWeight.normal,
-                    color: Colors.white,
                   ),
                 ),
               ],
             ),
           ),
 
-          // HomePage
+          // 1. HOME
           ListTile(
-            leading: const Icon(Icons.home_outlined),
-            title: const Text('Home'),
-            // Bagian redirection ke MyHomePage
+            leading: const Icon(Icons.home, color: Colors.white),
+            title: const Text('Home', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MyHomePage(),
-                )
+                MaterialPageRoute(builder: (context) => const MyHomePage()),
               );
             },
           ),
 
-          // How To
+          // 2. PROFILE
           ListTile(
-            leading: const Icon(Icons.question_mark),
-            title: const Text('How To?'),
+            leading: const Icon(Icons.account_circle, color: Colors.white),
+            title: const Text('Profile', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HowtoPage(),
+                  builder: (context) => const ProfileLoaderPage(),
                 ),
               );
             },
           ),
 
-
-          // Log Activity
+          // 3. HOW TO
           ListTile(
-            leading: const Icon(Icons.add_task),
-            title: const Text('Log Activity'),
-            // Bagian redirection ke page, misal form page
+            leading: const Icon(Icons.help_outline, color: Colors.white),
+            title: const Text('HowTo', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LogActivityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
-                  )
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HowtoPage()),
               );
             },
           ),
 
-          // Community
+          // 4. LOG ACTIVITY
           ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Community'),
-            // Bagian redirection ke page, misal form page
+            leading: const Icon(Icons.history, color: Colors.white),
+            title: const Text(
+              'Log Activity',
+              style: TextStyle(color: Colors.white),
+            ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CommunityPage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
-                  )
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LogActivityPage(),
+                ),
               );
             },
           ),
 
-          /* note dari Rexy
-          * TEMPLATE BUAT BAGIAN DRAWER
-          * 1. COPY SELURUH ISI ListTile(
-          * ...
-          * ),
-          * 2. ubah title dan routing pada builder: (context) => <page kalian>
-          */
+          // 5. COMMUNITY
           ListTile(
-            leading: const Icon(Icons.post_add),
-            title: const Text('Dummy'),
-            // Bagian redirection ke page, misal form page
+            leading: const Icon(Icons.people, color: Colors.white),
+            title: const Text(
+              'Community',
+              style: TextStyle(color: Colors.white),
+            ),
             onTap: () {
-              Navigator.pushReplacement( // bisa push atau pushreplacement
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MyHomePage(), // <= ubah ini, misal PlannerPage(), CommunityPage(), dll.
-                  )
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CommunityPage()),
               );
+            },
+          ),
+
+          // 6. LOGOUT
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.white),
+            title: const Text('Logout', style: TextStyle(color: Colors.white)),
+            onTap: () async {
+              // [PERBAIKAN UTAMA]
+              // Gunakan URL API '/auth/api/logout/' agar tidak error redirect.
+              final response = await request.logout(
+                "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/auth/api/logout/",
+              );
+
+              String message = response["message"];
+              if (context.mounted) {
+                if (response['status']) {
+                  String uname = response["username"];
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("$message Sampai jumpa, $uname.")),
+                  );
+                  // Pindah ke halaman Login dan hapus semua rute sebelumnya
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    (route) => false,
+                  );
+                } else {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(message)));
+                }
+              }
             },
           ),
         ],
