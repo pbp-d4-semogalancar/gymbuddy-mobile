@@ -34,7 +34,7 @@ class _ThreadDetailScreenState extends State<ThreadDetailScreen> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get(
-        '$domain/community/api/${widget.threadId}/',
+        '$domain/community/api/thread/${widget.threadId}/',
       );
       setState(() {
         _thread = ThreadDetail.fromJson(response['thread']);
