@@ -5,9 +5,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:gymbuddy/service/planner_service.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i3;
+import 'package:pbp_django_auth/pbp_django_auth.dart' as _i3;
+import 'package:shared_preferences/shared_preferences.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -24,56 +24,162 @@ import 'package:mockito/src/dummies.dart' as _i3;
 // ignore_for_file: subtype_of_sealed_class
 // ignore_for_file: invalid_use_of_internal_member
 
-/// A class which mocks [PlannerService].
+class _FakeSharedPreferences_0 extends _i1.SmartFake
+    implements _i2.SharedPreferences {
+  _FakeSharedPreferences_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+/// A class which mocks [CookieRequest].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPlannerService extends _i1.Mock implements _i2.PlannerService {
-  MockPlannerService() {
+class MockCookieRequest extends _i1.Mock implements _i3.CookieRequest {
+  MockCookieRequest() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  String get baseUrl =>
+  Map<String, String> get headers =>
       (super.noSuchMethod(
-            Invocation.getter(#baseUrl),
-            returnValue: _i3.dummyValue<String>(
+            Invocation.getter(#headers),
+            returnValue: <String, String>{},
+          )
+          as Map<String, String>);
+
+  @override
+  Map<String, _i3.Cookie> get cookies =>
+      (super.noSuchMethod(
+            Invocation.getter(#cookies),
+            returnValue: <String, _i3.Cookie>{},
+          )
+          as Map<String, _i3.Cookie>);
+
+  @override
+  Map<String, dynamic> get jsonData =>
+      (super.noSuchMethod(
+            Invocation.getter(#jsonData),
+            returnValue: <String, dynamic>{},
+          )
+          as Map<String, dynamic>);
+
+  @override
+  _i2.SharedPreferences get local =>
+      (super.noSuchMethod(
+            Invocation.getter(#local),
+            returnValue: _FakeSharedPreferences_0(
               this,
-              Invocation.getter(#baseUrl),
+              Invocation.getter(#local),
             ),
           )
-          as String);
+          as _i2.SharedPreferences);
 
   @override
-  _i4.Future<Map<String, dynamic>> fetchWorkoutLogs(
-    int? year,
-    int? month, {
-    String? weekStart,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(
-              #fetchWorkoutLogs,
-              [year, month],
-              {#weekStart: weekStart},
-            ),
-            returnValue: _i4.Future<Map<String, dynamic>>.value(
-              <String, dynamic>{},
-            ),
-          )
-          as _i4.Future<Map<String, dynamic>>);
+  bool get loggedIn =>
+      (super.noSuchMethod(Invocation.getter(#loggedIn), returnValue: false)
+          as bool);
 
   @override
-  _i4.Future<bool> completeLog(int? planId, String? description) =>
-      (super.noSuchMethod(
-            Invocation.method(#completeLog, [planId, description]),
-            returnValue: _i4.Future<bool>.value(false),
-          )
-          as _i4.Future<bool>);
+  bool get initialized =>
+      (super.noSuchMethod(Invocation.getter(#initialized), returnValue: false)
+          as bool);
 
   @override
-  _i4.Future<List<dynamic>> searchExercises(String? query) =>
+  set headers(Map<String, String>? value) => super.noSuchMethod(
+    Invocation.setter(#headers, value),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set cookies(Map<String, _i3.Cookie>? value) => super.noSuchMethod(
+    Invocation.setter(#cookies, value),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set jsonData(Map<String, dynamic>? value) => super.noSuchMethod(
+    Invocation.setter(#jsonData, value),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set local(_i2.SharedPreferences? value) => super.noSuchMethod(
+    Invocation.setter(#local, value),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set loggedIn(bool? value) => super.noSuchMethod(
+    Invocation.setter(#loggedIn, value),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set initialized(bool? value) => super.noSuchMethod(
+    Invocation.setter(#initialized, value),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  _i4.Future<dynamic> init() =>
       (super.noSuchMethod(
-            Invocation.method(#searchExercises, [query]),
-            returnValue: _i4.Future<List<dynamic>>.value(<dynamic>[]),
+            Invocation.method(#init, []),
+            returnValue: _i4.Future<dynamic>.value(),
           )
-          as _i4.Future<List<dynamic>>);
+          as _i4.Future<dynamic>);
+
+  @override
+  _i4.Future<dynamic> persist(String? cookies) =>
+      (super.noSuchMethod(
+            Invocation.method(#persist, [cookies]),
+            returnValue: _i4.Future<dynamic>.value(),
+          )
+          as _i4.Future<dynamic>);
+
+  @override
+  _i4.Future<dynamic> login(String? url, dynamic data) =>
+      (super.noSuchMethod(
+            Invocation.method(#login, [url, data]),
+            returnValue: _i4.Future<dynamic>.value(),
+          )
+          as _i4.Future<dynamic>);
+
+  @override
+  Map<String, dynamic> getJsonData() =>
+      (super.noSuchMethod(
+            Invocation.method(#getJsonData, []),
+            returnValue: <String, dynamic>{},
+          )
+          as Map<String, dynamic>);
+
+  @override
+  _i4.Future<dynamic> get(String? url) =>
+      (super.noSuchMethod(
+            Invocation.method(#get, [url]),
+            returnValue: _i4.Future<dynamic>.value(),
+          )
+          as _i4.Future<dynamic>);
+
+  @override
+  _i4.Future<dynamic> post(String? url, dynamic data) =>
+      (super.noSuchMethod(
+            Invocation.method(#post, [url, data]),
+            returnValue: _i4.Future<dynamic>.value(),
+          )
+          as _i4.Future<dynamic>);
+
+  @override
+  _i4.Future<dynamic> postJson(String? url, dynamic data) =>
+      (super.noSuchMethod(
+            Invocation.method(#postJson, [url, data]),
+            returnValue: _i4.Future<dynamic>.value(),
+          )
+          as _i4.Future<dynamic>);
+
+  @override
+  _i4.Future<dynamic> logout(String? url) =>
+      (super.noSuchMethod(
+            Invocation.method(#logout, [url]),
+            returnValue: _i4.Future<dynamic>.value(),
+          )
+          as _i4.Future<dynamic>);
 }
