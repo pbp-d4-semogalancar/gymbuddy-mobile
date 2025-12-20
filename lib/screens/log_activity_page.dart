@@ -5,6 +5,7 @@ import 'package:gymbuddy/models/workout_plan.dart';
 import 'package:gymbuddy/screens/workout_plan_page.dart';
 import 'package:gymbuddy/service/planner_service.dart';
 import 'package:gymbuddy/widgets/left_drawer.dart';
+import 'package:gymbuddy/widgets/user_avatar.dart';
 import 'package:gymbuddy/screens/community_page.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
@@ -69,7 +70,7 @@ class _LogActivityPageState extends State<LogActivityPage> {
 
     final request = context.read<CookieRequest>();
     final String domain = kIsWeb
-        ? "http://127.0.0.1:8000"
+        ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
         : "http://10.0.2.2:8000";
     final url =
         '$domain/planner/api/get-logs/?year=$_selectedYear&month=$_selectedMonth';
@@ -200,7 +201,7 @@ class _LogActivityPageState extends State<LogActivityPage> {
 
                 // 2. Siapkan URL (Pastikan ada trailing slash '/' di akhir agar tidak error Django)
                 final String domain = kIsWeb
-                    ? "http://127.0.0.1:8000"
+                    ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
                     : "http://10.0.2.2:8000";
                 final url = '$domain/planner/api/log/complete/${plan.id}/';
 
@@ -265,13 +266,10 @@ class _LogActivityPageState extends State<LogActivityPage> {
           ),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 28,
-                ),
-                onPressed: () => Scaffold.of(context).openDrawer(),
+              UserAvatar(
+                isCurrentUser: true, 
+                radius: 18,
+                onTap: () => Scaffold.of(context).openDrawer(),
               ),
               const Spacer(),
               Padding(

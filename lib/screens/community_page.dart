@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:gymbuddy/widgets/left_drawer.dart';
+import 'package:gymbuddy/widgets/user_avatar.dart';
 import 'package:gymbuddy/screens/howto_page.dart';
 import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
@@ -31,7 +32,7 @@ class _CommunityPageState extends State<CommunityPage> {
   String? _error;
 
   final String domain = kIsWeb
-      ? "http://127.0.0.1:8000"
+      ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
       : "http://10.0.2.2:8000";
 
   @override
@@ -144,13 +145,10 @@ class _CommunityPageState extends State<CommunityPage> {
           ),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 28,
-                ),
-                onPressed: () => Scaffold.of(context).openDrawer(),
+              UserAvatar(
+                isCurrentUser: true, 
+                radius: 18,
+                onTap: () => Scaffold.of(context).openDrawer(),
               ),
               const Spacer(),
               Padding(

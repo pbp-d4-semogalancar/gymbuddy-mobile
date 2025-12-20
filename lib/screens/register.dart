@@ -135,7 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Perhatikan parameter di backend Anda: 'password1' dan 'password2'
                       // Backend Anda membaca json.loads(request.body) di register_user_api
                       final response = await request.postJson(
-                        "http://127.0.0.1:8000/auth/api/register/",
+                        "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/auth/api/register/",
                         jsonEncode(<String, String>{
                           'username': username,
                           'password1':

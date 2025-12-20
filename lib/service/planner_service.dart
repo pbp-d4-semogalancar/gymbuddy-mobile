@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class PlannerService {
   // Ganti URL ini dengan URL backend Django Anda (untuk emulator Android gunakan 10.0.2.2)
-  final String baseUrl = "http://127.0.0.1:8000";
+  final String baseUrl = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
   Future<Map<String, dynamic>> fetchWorkoutLogs(
     int year,

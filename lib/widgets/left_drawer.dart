@@ -132,7 +132,7 @@ class LeftDrawer extends StatelessWidget {
               // [PERBAIKAN UTAMA]
               // Gunakan URL API '/auth/api/logout/' agar tidak error redirect.
               final response = await request.logout(
-                "http://127.0.0.1:8000/auth/api/logout/",
+                "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/auth/api/logout/",
               );
 
               String message = response["message"];

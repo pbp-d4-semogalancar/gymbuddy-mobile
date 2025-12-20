@@ -52,7 +52,7 @@ class DeleteProfileDialog extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Batal"),
+                  child: const Text("Batal", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -67,7 +67,7 @@ class DeleteProfileDialog extends StatelessWidget {
                   },
                   child: const Text(
                     "Ya, Hapus",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ),

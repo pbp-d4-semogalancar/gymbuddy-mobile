@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/user_profile.dart';
 import 'package:gymbuddy/screens/login.dart';
+import 'package:gymbuddy/screens/menu.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:gymbuddy/providers/user_provider.dart';
@@ -34,7 +35,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   bool _showUrlField = false;
 
   // --- KONFIGURASI URL ---
-  final String _baseUrl = "http://localhost:8000";
+  final String _baseUrl = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
   @override
   void initState() {
@@ -105,6 +106,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       final response = await request.post(url, body);
 
       if (mounted && response['success'] == true) {
+        context.read<UserProvider>().setProfilePicture(_profilePictureController.text);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil disimpan!")),
         );
@@ -372,7 +375,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.grey[600],
                   ),
-                  onPressed: () => Navigator.pop(ctx),
+                  onPressed: () =>
+                    Navigator.pushReplacement(
+                      ctx,
+                      MaterialPageRoute(builder: (context) => const MyHomePage()),
+                    ),
                   child: const Text("Batal"),
                 ),
                 ElevatedButton(

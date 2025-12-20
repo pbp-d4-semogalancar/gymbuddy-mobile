@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:gymbuddy/providers/user_provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:gymbuddy/models/user_profile.dart';
@@ -24,7 +25,7 @@ class _UserProfileFormState extends State<UserProfileForm> {
   bool _isSaving = false;
   bool _showUrlField = true;
 
-  final String _baseUrl = "http://localhost:8000";
+  final String _baseUrl = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
   @override
   void dispose() {
@@ -65,6 +66,7 @@ class _UserProfileFormState extends State<UserProfileForm> {
       );
 
       if (mounted && response['success'] == true) {
+        context.read<UserProvider>().setProfilePicture(_profilePictureController.text);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profil berhasil dibuat!")),
         );

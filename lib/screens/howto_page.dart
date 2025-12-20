@@ -6,6 +6,7 @@ import 'package:gymbuddy/screens/log_activity_page.dart';
 import 'package:gymbuddy/screens/menu.dart';
 import 'package:gymbuddy/service/howto_service.dart';
 import 'package:gymbuddy/widgets/left_drawer.dart';
+import 'package:gymbuddy/widgets/user_avatar.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -411,14 +412,10 @@ class _HowtoPageState extends State<HowtoPage> {
           child: Row(
             children: [
               // POIN 2: Icon Profile yang membuka Left Drawer
-              IconButton(
-                icon: const Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 28,
-                ),
-                // Tetap panggil openDrawer agar fungsinya seperti menu burger
-                onPressed: () => Scaffold.of(context).openDrawer(),
+              UserAvatar(
+                isCurrentUser: true, 
+                radius: 18,
+                onTap: () => Scaffold.of(context).openDrawer(),
               ),
 
               // Spacer ini akan mendorong widget setelahnya ke paling kanan

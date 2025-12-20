@@ -19,7 +19,7 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
 
   // URL Domain
   final String domain = kIsWeb
-      ? "http://127.0.0.1:8000"
+      ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
       : "http://10.0.2.2:8000";
 
   Future<void> _submitThread(BuildContext context) async {

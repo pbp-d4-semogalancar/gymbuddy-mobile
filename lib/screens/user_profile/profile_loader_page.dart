@@ -36,8 +36,8 @@ class _ProfileLoaderPageState extends State<ProfileLoaderPage> {
     // --- REQUEST KE BACKEND (DENGAN ID) ---
     // ambil data dari show_json_by_id
     // To connect Android emulator with Django on localhost, use URL http://10.0.2.2/
-    // If you using chrome, use URL http://localhost:8000
-    final response = await request.get('http://localhost:8000/profile/json/$targetId/');
+    // If you using chrome, use URL https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id
+    final response = await request.get('https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/profile/json/$targetId/');
 
     // Parsing JSON ke Model
     return UserProfileEntry.fromJson(response);

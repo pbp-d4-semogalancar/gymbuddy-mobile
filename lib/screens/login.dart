@@ -106,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                       // Gunakan '/auth/api/login/' agar masuk ke fungsi 'login_user_api' di backend.
                       // Fungsi ini mengembalikan JSON dan TIDAK melakukan redirect error.
                       final response = await request.login(
-                        "http://127.0.0.1:8000/auth/api/login/",
+                        "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id/auth/api/login/",
                         {'username': username, 'password': password},
                       );
 
