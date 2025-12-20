@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gymbuddy/models/user_profile.dart';
 import 'package:gymbuddy/screens/login.dart';
 import 'package:gymbuddy/screens/menu.dart';
+import 'package:gymbuddy/screens/user_profile/profile_loader_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:gymbuddy/providers/user_provider.dart';
@@ -239,7 +240,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               ),
                             ),
                             onPressed: () => _showDeleteConfirmation(context),
-                          )
+                          ),
+                          // ElevatedButton(
+                          //   style: ElevatedButton.styleFrom(
+                          //     backgroundColor: Colors.red,
+                          //     foregroundColor: Colors.white,
+                          //   ),
+                          //   onPressed: () {
+                          //     // Logika Navigasi
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(builder: (context) => const ProfileLoaderPage(userId: 26)),
+                          //     );
+                          //   },
+                          //   child: const Text("Tes Navigasi (Dummy)"),
+                          // )
                         ]
                       ],
                     ),

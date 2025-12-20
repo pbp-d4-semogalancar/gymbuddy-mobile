@@ -8,6 +8,7 @@ class UserAvatar extends StatefulWidget {
   final double radius;
   final VoidCallback? onTap;
   final bool isCurrentUser;
+  final int? userId;
 
   const UserAvatar({
     super.key,
@@ -15,6 +16,7 @@ class UserAvatar extends StatefulWidget {
     this.radius = 20.0,
     this.onTap,
     this.isCurrentUser = false,
+    this.userId
   });
 
   @override
@@ -24,14 +26,20 @@ class UserAvatar extends StatefulWidget {
 class _UserAvatarState extends State<UserAvatar> {
   final String _baseUrl = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
+  String? _fetchedUrl;
+
   @override
   void initState() {
     super.initState();
-    // Jika ini adalah Current User, widget ini inisiatif fetch data sendiri
+  
     if (widget.isCurrentUser) {
-      // Panggil fetch setelah frame build selesai agar aman akses context
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchMyProfile();
+      });
+    } 
+    else if (widget.userId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchUserProfileById(widget.userId!);
       });
     }
   }
@@ -40,20 +48,31 @@ class _UserAvatarState extends State<UserAvatar> {
     final request = context.read<CookieRequest>();
     final userProvider = context.read<UserProvider>();
     
-    // Pastikan user sudah login (punya ID)
     if (userProvider.userId == null) return;
 
     try {
       final response = await request.get('$_baseUrl/profile/json/${userProvider.userId}/');
       String? rawUrl = response['profile_picture'];
 
-      // Cek mounted sebelum update state/provider
       if (mounted) {
-        // Kita update Provider, agar SEMUA UserAvatar di aplikasi (Drawer dll) ikut berubah
         userProvider.setProfilePicture(rawUrl);
       }
     } catch (e) {
-      // Silent error (biar gak ngerusak UI)
+    }
+  }
+
+  Future<void> _fetchUserProfileById(int id) async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.get('$_baseUrl/profile/json/$id/');
+      String? rawUrl = response['profile_picture'];
+
+      if (mounted) {
+        setState(() {
+          _fetchedUrl = rawUrl;
+        });
+      }
+    } catch (e) {
     }
   }
 
@@ -65,13 +84,14 @@ class _UserAvatarState extends State<UserAvatar> {
 
   @override
   Widget build(BuildContext context) {
+    
     String? finalUrl = widget.imageUrl;
 
-    // Jika mode Current User, abaikan parameter imageUrl, ambil dari Provider
     if (widget.isCurrentUser) {
-      // Kita 'watch' provider. Jadi kalau _fetchMyProfile selesai update provider,
-      // widget ini akan rebuild otomatis dengan gambar baru.
       finalUrl = context.watch<UserProvider>().profilePicture;
+    } 
+    else if (widget.userId != null) {
+      finalUrl = _fetchedUrl ?? widget.imageUrl;
     }
 
     final String? displayUrl = _getProxyUrl(finalUrl);
