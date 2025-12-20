@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -48,21 +50,39 @@ class _ThreadDetailScreenState extends State<ThreadDetailScreen> {
   }
 
   Future<void> _postReply() async {
-    if (_replyController.text.isEmpty) return;
+    if (_replyController.text.trim().isEmpty) return;
+
+    FocusScope.of(context).unfocus();
+
     final request = context.read<CookieRequest>();
+    
     try {
       final response = await request.postJson(
-        '$domain/community/api/${widget.threadId}/reply/',
-        {"content": _replyController.text},
+        '$domain/community/api/thread/${widget.threadId}/add_reply/', 
+        jsonEncode(<String, String>{
+          'content': _replyController.text,
+        }),
       );
+
+      if (!mounted) return;
+
       if (response['status'] == 'success') {
         _replyController.clear();
         _fetchThreadData();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Balasan berhasil dikirim!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'] ?? "Gagal mengirim balasan.")),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal mengirim balasan: $e")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 

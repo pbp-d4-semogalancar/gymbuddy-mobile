@@ -39,38 +39,44 @@ class _EditThreadPageState extends State<EditThreadPage> {
 
   Future<void> _submitEdit(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
+    
+    FocusScope.of(context).unfocus();
     final request = context.read<CookieRequest>();
     setState(() => _isLoading = true);
 
     try {
-      final response = await request.postJson(
-        "$domain/community/edit-flutter/${widget.threadIndex}/",
-        {"title": _titleController.text, "content": _contentController.text},
+      request.headers['X-Requested-With'] = 'XMLHttpRequest';
+
+      final response = await request.post(
+        "$domain/community/edit/${widget.threadIndex}/",
+        {
+          "title": _titleController.text,
+          "content": _contentController.text,
+        },
       );
 
-      if (response['status'] == 'success') {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Perubahan berhasil disimpan!")),
-          );
-          Navigator.pop(context, true);
-        }
+      if (!mounted) return;
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Perubahan berhasil disimpan!")),
+        );
+        Navigator.pop(context, true);
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Gagal menyimpan perubahan.")),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['error'] ?? "Gagal menyimpan.")),
+        );
       }
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text("Gagal: Pastikan ID Thread benar. ($e)")),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
