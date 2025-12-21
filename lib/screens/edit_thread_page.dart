@@ -24,9 +24,7 @@ class _EditThreadPageState extends State<EditThreadPage> {
   late TextEditingController _contentController;
   bool _isLoading = false;
 
-  final String domain = kIsWeb
-      ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
-      : "http://10.0.2.2:8000";
+  final String domain = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
   @override
   void initState() {

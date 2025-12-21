@@ -69,9 +69,8 @@ class _LogActivityPageState extends State<LogActivityPage> {
     setState(() => _isLoading = true);
 
     final request = context.read<CookieRequest>();
-    final String domain = kIsWeb
-        ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
-        : "http://10.0.2.2:8000";
+    final String domain = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
+    
     final url =
         '$domain/planner/api/get-logs/?year=$_selectedYear&month=$_selectedMonth';
 

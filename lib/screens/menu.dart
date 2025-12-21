@@ -42,9 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final now = DateTime.now();
 
     // Tentukan Domain (Localhost Android vs Web)
-    final String domain = kIsWeb
-        ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
-        : "http://10.0.2.2:8000";
+    final String domain = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
     final url =
         '$domain/planner/api/get-logs/?year=${now.year}&month=${now.month}';
 

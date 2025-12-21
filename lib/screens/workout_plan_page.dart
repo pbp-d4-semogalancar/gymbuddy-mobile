@@ -27,9 +27,7 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
   String selectedDay = DateTime.now().day.toString().padLeft(2, '0');
 
   // Backend URL
-  final String domain = kIsWeb
-      ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
-      : "http://10.0.2.2:8000";
+  final String domain = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
   // --- Helper Functions ---
   String _monthToNum(String month) {
