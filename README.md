@@ -4,8 +4,10 @@
 
 [![Build Status](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/status.svg?token=84kn4JlFwYnUJ0Ubrr1XBQ&branch=main)](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207)
 
-## Download
+# Download
+
 Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/installable-artifacts/e0c0596960269092/public-install-page/2864e5da396a580123ac46d1a8a628a4)
+
 ---
 
 # Anggota Kelompok D04
