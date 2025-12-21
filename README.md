@@ -91,3 +91,8 @@ Link : https://www.figma.com/design/gd4ThrbN9Kt4ddC3wJG0LE/GymBuddy-fixed?node-i
 
 # Download
 https://app.bitrise.io/app/caae4bad-c474-4411-8ca3-6bebb1d077b8/installable-artifacts/5405991bf3c13579/public-install-page/c763365a7e08462b09318263069a9ed0
+
+# Implementasi bonus individu
+Link blog Riyaan Baihaqi untuk implementasi testing: https://medium.com/@riyaanb2306/beyond-flutter-test-mastering-widget-integration-testing-in-gymbuddy-a-developers-reality-check-87b82560705c
+
+Link blog Riyaan Baihaqi untuk advanced state management: https://medium.com/@riyaanb2306/escaping-setstate-hell-scalable-state-management-in-gymbuddy-using-provider-e84598eb859c
