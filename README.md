@@ -6,7 +6,7 @@
 
 # Download
 
-Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/installable-artifacts/e0c0596960269092/public-install-page/2864e5da396a580123ac46d1a8a628a4)
+Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/installable-artifacts/54bb2a8980d6c1ad/public-install-page/869a5bdcea5396a7e4f634102bd3efbb)
 
 ---
 
@@ -90,12 +90,6 @@ Langkah berikutnya adalah integrasi data untuk fitur-fitur spesifik. Dalam kasus
 
 # Link Figma
 Link : https://www.figma.com/design/gd4ThrbN9Kt4ddC3wJG0LE/GymBuddy-fixed?node-id=0-1&t=98SSVTNFPLh6NyIG-1
-
-# Nama Aplikasi
-[![Build Status](https://app.bitrise.io/app/caae4bad-c474-4411-8ca3-6bebb1d077b8/status.svg?token=ziMmlosMMMrO8B0XJoJLNA&branch=main)](https://app.bitrise.io/app/caae4bad-c474-4411-8ca3-6bebb1d077b8)
-
-# Download
-https://app.bitrise.io/app/caae4bad-c474-4411-8ca3-6bebb1d077b8/installable-artifacts/5405991bf3c13579/public-install-page/c763365a7e08462b09318263069a9ed0
 
 # Link youtube video mockup
 https://youtu.be/2xEFZSPYuvE?si=GGCLCeBegXWeahbx
