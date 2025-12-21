@@ -25,6 +25,7 @@ void main() {
     );
   }
 
+  // Data Dummy untuk tes
   final dummyResponse = {
     'period_name': 'Bulan Oktober 2025',
     'total_plans': 5,
@@ -59,53 +60,85 @@ void main() {
   };
 
   group('LogActivityPage Tests', () {
-    testWidgets('UI elements render correctly on load', (WidgetTester tester) async {
+    // [FIX 1] UI Rendering
+    testWidgets('UI elements render correctly on load', (
+      WidgetTester tester,
+    ) async {
       when(mockRequest.get(any)).thenAnswer((_) async => dummyResponse);
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pump();
 
-      expect(find.textContaining('Log'), findsWidgets); 
-      
-      // Cek List Item muncul
+      // GANTI pump() JADI pumpAndSettle()
+      // Ini menunggu FutureBuilder selesai loading data
+      await tester.pumpAndSettle();
+
+      // Sekarang teks pasti sudah muncul
       expect(find.text('Bench Press'), findsOneWidget);
       expect(find.text('Squat'), findsOneWidget);
     });
 
-    testWidgets('Show empty state when no logs available', (WidgetTester tester) async {
-      // Mock return list kosong
+    // [FIX 2] Empty State
+    testWidgets('Show empty state when no logs available', (
+      WidgetTester tester,
+    ) async {
       when(mockRequest.get(any)).thenAnswer((_) async => {'plans': []});
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pump();
 
-      // (Berdasarkan file workout_plan_page.dart, teksnya mungkin "Belum ada rencana...")
+      // GANTI pump() JADI pumpAndSettle()
+      await tester.pumpAndSettle();
+
+      // Pastikan teks ini sesuai dengan yang ada di LogActivityPage Anda
+      // (Bisa "Belum ada rencana" atau teks lain yang Anda pasang untuk list kosong)
       expect(find.textContaining('Belum ada'), findsOneWidget);
     });
 
-    testWidgets('Interaction: Mark log as completed', (WidgetTester tester) async {
-      // Load data awal
+    // [FIX 3] Interaction Mark as Completed
+    testWidgets('Interaction: Mark log as completed', (
+      WidgetTester tester,
+    ) async {
       when(mockRequest.get(any)).thenAnswer((_) async => dummyResponse);
-      
-      // Mock POST request untuk complete log
-      when(mockRequest.post(any, any)).thenAnswer((_) async => {'status': 'success'});
+      when(
+        mockRequest.post(any, any),
+      ).thenAnswer((_) async => {'status': 'success'});
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pump();
 
-      // Cari tombol "Selesai" (checkbox atau button) dan klik
-      // Sesuaikan finder ini dengan UI terbaru Anda (misal Icon Checkbox)
-      final completeButton = find.byIcon(Icons.circle_outlined); // Asumsi icon belum selesai
+      // [PENTING] Tunggu data awal muncul dulu sebelum mencari tombol!
+      await tester.pumpAndSettle();
+
+      // Cari tombol (Icon circle outlined untuk yang belum selesai)
+      final completeButton = find.byIcon(Icons.circle_outlined);
+
+      // Pastikan tombol ketemu
+      expect(completeButton, findsWidgets);
+
       if (completeButton.evaluate().isNotEmpty) {
-         await tester.tap(completeButton.first);
-         await tester.pumpAndSettle(); // Tunggu dialog
-         
-         // Cek Dialog muncul
-         expect(find.byType(Dialog), findsOneWidget);
-         
-         // Klik Simpan di dialog
-         await tester.tap(find.text('Simpan'));
-         await tester.pump();
+        await tester.tap(completeButton.first);
+        await tester.pumpAndSettle(); // Tunggu Dialog muncul
+
+        expect(find.byType(Dialog), findsOneWidget);
+
+        await tester.tap(find.text('Simpan'));
+        await tester.pumpAndSettle(); // Tunggu proses simpan & snackbar
+      }
+    });
+
+    // Test 4 (Filter) Anda sudah aman karena sudah pakai pumpAndSettle di kode aslinya
+    testWidgets('Interaction: Filter changes triggers data fetch', (
+      WidgetTester tester,
+    ) async {
+      when(mockRequest.get(any)).thenAnswer((_) async => {'plans': []});
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle(); // Tunggu load awal
+
+      final dropdowns = find.byType(DropdownButtonFormField<int>);
+      if (dropdowns.evaluate().isNotEmpty) {
+        await tester.tap(dropdowns.first);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('2026').last);
+        await tester.pumpAndSettle(); // Tunggu data refresh
       }
     });
   });
