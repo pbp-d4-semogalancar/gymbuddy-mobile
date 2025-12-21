@@ -1,7 +1,11 @@
 # GymBuddy Mobile 🏋🏽🔥💪🏼
 
-![Status](https://img.shields.io/badge/status-development-yellow)
 ![Built_with-Flutter-0256D6](https://img.shields.io/badge/Built_with-Flutter-0256D6?style=flat-square)
+
+[![Build Status](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/status.svg?token=84kn4JlFwYnUJ0Ubrr1XBQ&branch=main)](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207)
+
+## Download
+Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/installable-artifacts/98727898a24f9a75/public-install-page/7fcce4e7ee4083d015a5cd77d3bd0be5)
 
 ---
 
