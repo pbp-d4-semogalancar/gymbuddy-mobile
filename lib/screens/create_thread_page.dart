@@ -18,9 +18,7 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
   bool _isLoading = false;
 
   // URL Domain
-  final String domain = kIsWeb
-      ? "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id"
-      : "http://10.0.2.2:8000";
+  final String domain = "https://rexy-adrian-gymbuddy.pbp.cs.ui.ac.id";
 
   Future<void> _submitThread(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
