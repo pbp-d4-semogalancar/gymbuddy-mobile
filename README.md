@@ -4,8 +4,9 @@
 
 [![Build Status](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/status.svg?token=84kn4JlFwYnUJ0Ubrr1XBQ&branch=main)](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207)
 
-## Download
-Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/installable-artifacts/98727898a24f9a75/public-install-page/7fcce4e7ee4083d015a5cd77d3bd0be5)
+# Download
+
+Download aplikasi versi terbaru: [Download APK](https://app.bitrise.io/app/7618b70e-f581-4785-a563-84e3e45ed207/installable-artifacts/e0c0596960269092/public-install-page/2864e5da396a580123ac46d1a8a628a4)
 
 ---
 
@@ -95,3 +96,11 @@ Link : https://www.figma.com/design/gd4ThrbN9Kt4ddC3wJG0LE/GymBuddy-fixed?node-i
 
 # Download
 https://app.bitrise.io/app/caae4bad-c474-4411-8ca3-6bebb1d077b8/installable-artifacts/5405991bf3c13579/public-install-page/c763365a7e08462b09318263069a9ed0
+
+# Link youtube video mockup
+https://youtu.be/2xEFZSPYuvE?si=GGCLCeBegXWeahbx
+
+# Implementasi bonus individu
+Link blog Riyaan Baihaqi untuk implementasi testing: https://medium.com/@riyaanb2306/beyond-flutter-test-mastering-widget-integration-testing-in-gymbuddy-a-developers-reality-check-87b82560705c
+
+Link blog Riyaan Baihaqi untuk advanced state management: https://medium.com/@riyaanb2306/escaping-setstate-hell-scalable-state-management-in-gymbuddy-using-provider-e84598eb859c
