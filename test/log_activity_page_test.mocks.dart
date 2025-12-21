@@ -4,7 +4,9 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
+import 'dart:ui' as _i6;
 
+import 'package:gymbuddy/providers/user_provider.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:pbp_django_auth/pbp_django_auth.dart' as _i3;
 import 'package:shared_preferences/shared_preferences.dart' as _i2;
@@ -182,4 +184,60 @@ class MockCookieRequest extends _i1.Mock implements _i3.CookieRequest {
             returnValue: _i4.Future<dynamic>.value(),
           )
           as _i4.Future<dynamic>);
+}
+
+/// A class which mocks [UserProvider].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUserProvider extends _i1.Mock implements _i5.UserProvider {
+  MockUserProvider() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  bool get hasListeners =>
+      (super.noSuchMethod(Invocation.getter(#hasListeners), returnValue: false)
+          as bool);
+
+  @override
+  void setUser(int? id, String? uname) => super.noSuchMethod(
+    Invocation.method(#setUser, [id, uname]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void setProfilePicture(String? url) => super.noSuchMethod(
+    Invocation.method(#setProfilePicture, [url]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void logout() => super.noSuchMethod(
+    Invocation.method(#logout, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void addListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+    Invocation.method(#addListener, [listener]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void removeListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+    Invocation.method(#removeListener, [listener]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void dispose() => super.noSuchMethod(
+    Invocation.method(#dispose, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+    Invocation.method(#notifyListeners, []),
+    returnValueForMissingStub: null,
+  );
 }
